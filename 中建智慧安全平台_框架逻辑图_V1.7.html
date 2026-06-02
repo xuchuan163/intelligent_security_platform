@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中建集团项目工地安全智能平台 V1.7 — 完整项目框架逻辑图</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --primary: #1a3a5c;
+    --blue: #3b7ddd;
+    --green: #52c41a;
+    --purple: #722ed1;
+    --orange: #fa8c16;
+    --pink: #eb2f96;
+    --red: #f5222d;
+    --cyan: #13c2c2;
+    --gold: #d4a843;
+    --bg: #f0f3f8;
+    --card-bg: #ffffff;
+    --text: #2c3e50;
+    --text-light: #7f8c8d;
+    --border: #e8ecf1;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .header {
+    background: linear-gradient(135deg, #0d2137 0%, #1a3a5c 40%, #1e4d7b 100%);
+    color: #fff;
+    padding: 50px 20px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 50%, rgba(59,125,221,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(114,46,209,0.1) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .header .subtitle {
+    font-size: 15px;
+    color: rgba(255,255,255,0.75);
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .header .badges {
+    margin-top: 18px;
+    position: relative;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .header .badge {
+    display: inline-block;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .badge-new { background: rgba(82,196,26,0.2); color: #b7eb8f; border-color: rgba(82,196,26,0.3); }
+
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 0;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .nav-links {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 4px;
+  }
+  .nav a {
+    text-decoration: none;
+    color: var(--text-light);
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    transition: all .2s;
+    flex-shrink: 0;
+  }
+  .nav a:hover, .nav a.active { color: var(--blue); background: rgba(59,125,221,0.08); }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
+
+  .section {
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03);
+    margin-bottom: 32px;
+    overflow: hidden;
+    transition: transform .2s;
+  }
+  .section:hover { transform: translateY(-2px); }
+
+  .section-header {
+    padding: 20px 30px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-num {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px; color: #fff;
+    flex-shrink: 0;
+  }
+  .num-layer { background: var(--blue); }
+  .num-flow { background: var(--cyan); }
+  .num-agent { background: var(--purple); }
+  .num-profile { background: var(--orange); }
+  .num-memory { background: var(--pink); }
+  .num-tenant { background: var(--gold); }
+  .num-deploy { background: #475569; }
+  .num-tech { background: #0891b2; }
+  .num-loop { background: var(--green); }
+  .num-rule { background: var(--red); }
+
+  .section-header h2 {
+    font-size: 19px;
+    color: var(--primary);
+  }
+  .section-tag {
+    font-size: 11px;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .tag-new { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+  .tag-core { background: #e6f7ff; color: #096dd9; border: 1px solid #91d5ff; }
+  .tag-updated { background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
+
+  .section-body { padding: 24px 30px; overflow-x: auto; }
+  .mermaid {
+    display: flex;
+    justify-content: center;
+    background: #fafbfc;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px dashed var(--border);
+  }
+
+  .footer {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-light);
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ======== HEADER ======== -->
+<div class="header">
+  <h1>🏗️ 中建集团项目工地安全智能平台</h1>
+  <p class="subtitle">基于大语言模型、NL2SQL、四库协同、指标语义层、Agent 记忆与三类安全风险画像的施工安全智能管控平台<br>技术开发文档 V1.7 — 完整项目框架逻辑图</p>
+  <div class="badges">
+    <span class="badge badge-new">V1.7 新增：Agent 记忆系统</span>
+    <span class="badge badge-new">V1.7 新增：多租户隔离</span>
+    <span class="badge badge-new">V1.7 新增：Prompt 工程</span>
+    <span class="badge badge-new">V1.7 新增：反馈学习闭环</span>
+    <span class="badge badge-new">V1.7 新增：LLM 私有化部署</span>
+    <span class="badge badge-new">V1.7 新增：Agent 安全攻防</span>
+  </div>
+</div>
+
+<!-- ======== NAV ======== -->
+<div class="nav">
+  <div class="nav-links">
+    <a href="#s1">一·七层架构</a>
+    <a href="#s2">二·数据流</a>
+    <a href="#s3">三·四库协同</a>
+    <a href="#s4">四·三类画像</a>
+    <a href="#s5">五·Agent协同</a>
+    <a href="#s6">六·记忆系统</a>
+    <a href="#s7">七·多租户</a>
+    <a href="#s8">八·业务闭环</a>
+    <a href="#s9">九·隐患工单</a>
+    <a href="#s10">十·NL2SQL</a>
+    <a href="#s11">十一·Prompt</a>
+    <a href="#s12">十二·安全攻防</a>
+    <a href="#s13">十三·反馈学习</a>
+    <a href="#s14">十四·LLM部署</a>
+    <a href="#s15">十五·部署架构</a>
+    <a href="#s16">十六·数据质量</a>
+    <a href="#s17">十七·技术栈</a>
+    <a href="#s18">十八·全景</a>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ==================== 1. 总体七层架构 ==================== -->
+<div class="section" id="s1">
+  <div class="section-header">
+    <div class="section-num num-layer">一</div>
+    <h2>总体七层架构图</h2>
+    <span class="section-tag tag-updated">V1.7 更新</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+graph TB
+    subgraph L7["🖥️ 用户交互层"]
+        direction LR
+        WEB["Web端管理后台 💻"]
+        MOBILE["移动端APP 📱"]
+        WECHART["企业微信 💬"]
+        DASHBOARD["驾驶舱大屏 📊"]
+    end
+
+    subgraph L6["📊 业务应用层"]
+        direction LR
+        APP1["三类风险画像"]
+        APP2["智能问数"]
+        APP3["隐患整改"]
+        APP4["报告生成"]
+        APP5["精准培训"]
+        APP6["风险预警"]
+        APP7["工单督办"]
+    end
+
+    subgraph L5["🤖 Agent编排层（含记忆管理）"]
+        direction LR
+        MASTER["主控Agent 🧭"]
+        QA["智能问数Agent 💬"]
+        PROFILE["画像分析Agent 📊"]
+        HAZARD["隐患整改Agent 🔧"]
+        ALERT["风险预警Agent ⚠️"]
+        REPORT["报告生成Agent 📝"]
+        TOOLS["工具模块 ×7"]
+        MEMORY["记忆管理模块 🧠"]
+    end
+
+    subgraph L4["🧠 智能能力层"]
+        direction LR
+        LLM["LLM大模型<br/>Qwen/DeepSeek/GLM"]
+        NL2SQL["NL2SQL引擎<br/>+ Schema Linking"]
+        RAG["RAG检索增强<br/>+ 双路检索"]
+        KG["知识图谱 Neo4j<br/>安全关系网络"]
+        RULE["规则引擎<br/>Drools/自研"]
+        BAYES["贝叶斯归因<br/>概率推理"]
+    end
+
+    subgraph L3["🗄️ 数据服务层"]
+        direction LR
+        SEMANTIC["指标语义层<br/>+ 指标字典"]
+        DQ["数据质量层<br/>6维校验"]
+        AUTH["权限与审计层<br/>多租户过滤"]
+    end
+
+    subgraph L2["💾 存储计算层（四库协同 + 时序库）"]
+        direction LR
+        MYSQL["MySQL 8.0<br/>结构化主库"]
+        NEO4J["Neo4j 5.x<br/>关系图谱"]
+        MILVUS["Milvus 2.4+<br/>向量知识库"]
+        REDIS["Redis 7.x Cluster<br/>缓存·会话·状态"]
+        TSDB["时序库<br/>InfluxDB/TDengine"]
+    end
+
+    subgraph L1["📡 数据采集层（12个上游系统 / 5种集成模式）"]
+        direction LR
+        S1["劳务实名制"]
+        S2["隐患管理"]
+        S3["智慧工地"]
+        S4["视频监控"]
+        S5["特种设备"]
+        S6["进度计划"]
+        S7["BIM系统"]
+        S8["财务成本"]
+        S9["物资采购"]
+        S10["OA审批"]
+        S11["应急管理"]
+        S12["事故管理"]
+    end
+
+    L1 --> L2
+    L2 --> L3
+    L3 --> L4
+    L4 --> L5
+    L5 --> L6
+    L6 --> L7
+
+    style L1 fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px,rx:10
+    style L2 fill:#e8f4fd,stroke:#3b7ddd,stroke-width:2px,rx:10
+    style L3 fill:#e8f4fd,stroke:#3b7ddd,stroke-width:2px,rx:10
+    style L4 fill:#f0ffe6,stroke:#52c41a,stroke-width:2px,rx:10
+    style L5 fill:#f5edff,stroke:#722ed1,stroke-width:2px,rx:10
+    style L6 fill:#fff7e6,stroke:#fa8c16,stroke-width:2px,rx:10
+    style L7 fill:#fff0f6,stroke:#eb2f96,stroke-width:2px,rx:10
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 2. 系统数据流 ==================== -->
+<div class="section" id="s2">
+  <div class="section-header">
+    <div class="section-num num-flow">二</div>
+    <h2>系统上下文与数据流向图</h2>
+    <span class="section-tag tag-core">核心</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+flowchart TB
+    subgraph UP["上游业务系统（12系统 / 5模式）"]
+        direction LR
+        US1["实名制<br/>API/视图"]
+        US2["隐患<br/>API/MQ"]
+        US3["智慧工地<br/>IoT网关"]
+        US4["视频监控<br/>CV事件"]
+        US5["特种设备<br/>API"]
+        US6["进度/BIM<br/>API/文件"]
+        US7["财务物资<br/>API/DW"]
+        US8["OA/应急<br/>Webhook"]
+    end
+
+    subgraph PLAT["中建工地安全智能平台"]
+        direction TB
+        A["📥 数据接入<br/>拉取·MQ消费·文件导入<br/>断点续传·幂等·对账"]
+        B["🔧 数据治理<br/>统一ID·主数据归属<br/>质量校验·缺失处理"]
+        C["📐 指标语义层<br/>指标定义·维度映射<br/>权限标签·血缘·别名"]
+        D["🧮 画像计算<br/>基础分×修正+强规则<br/>项目·工人·分包商"]
+        E["⚡ 强规则引擎<br/>30+ 规则·版本管理"]
+        F["🤖 智能能力<br/>LLM·NL2SQL·RAG<br/>KG·贝叶斯·规则"]
+        G["🧭 多Agent<br/>主控+6核心+7工具<br/>+记忆管理"]
+        H["📋 工单闭环<br/>整改·预警·培训<br/>约谈·限制·核查"]
+    end
+
+    subgraph DOWN["下游输出与联动"]
+        direction LR
+        D1["企业微信通知"]
+        D2["OA审批"]
+        D3["隐患回写"]
+        D4["开放API"]
+        D5["Webhook"]
+    end
+
+    UP --> A
+    A --> B --> C --> D
+    D --> E
+    E --> F --> G --> H
+    H --> DOWN
+    DOWN -.->|"执行回写→画像重算"| D
+    E -.->|"高风险直通"| G
+
+    style UP fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px,rx:10
+    style PLAT fill:#fafbfc,stroke:#1a3a5c,stroke-width:3px,rx:12
+    style DOWN fill:#fff7e6,stroke:#fa8c16,stroke-width:2px,rx:10
+    style A fill:#e6f0ff,stroke:#3b7ddd
+    style B fill:#e6f0ff,stroke:#3b7ddd
+    style C fill:#e6f0ff,stroke:#3b7ddd
+    style D fill:#f0ffe6,stroke:#52c41a
+    style E fill:#fff0f0,stroke:#f5222d
+    style F fill:#f0ffe6,stroke:#52c41a
+    style G fill:#f5edff,stroke:#722ed1
+    style H fill:#fff7e6,stroke:#fa8c16
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 3. 四库协同 ==================== -->
+<div class="section" id="s3">
+  <div class="section-header">
+    <div class="section-num num-layer">三</div>
+    <h2>四库协同存储架构图</h2>
+    <span class="section-tag tag-core">核心</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+flowchart TB
+    subgraph APP_L["应用查询层"]
+        direction LR
+        Q1["画像查询"]
+        Q2["智能问数"]
+        Q3["Agent会话"]
+        Q4["预警展示"]
+        Q5["工单管理"]
+    end
+
+    subgraph CACHE_L["Redis 缓存层"]
+        R1["画像结果<br/>1天过期"]
+        R2["会话记忆<br/>30min~2h"]
+        R3["任务状态<br/>2h"]
+        R4["问数结果<br/>5min"]
+        R5["预警/气象<br/>30min"]
+    end
+
+    subgraph STORE_L["持久存储层（四库协同）"]
+        subgraph MYSQL_G["MySQL 8.0 — 结构化事实主库"]
+            M1["画像结果表"]
+            M2["隐患·工单·台账"]
+            M3["指标聚合·快照"]
+            M4["主数据映射"]
+            M5["Checkpoint审计"]
+        end
+        subgraph NEO4J_G["Neo4j 5.x — 安全关系图谱"]
+            N1["项目-分包-班组-工人"]
+            N2["隐患归属·设备关联"]
+            N3["作业关系·事故相似"]
+        end
+        subgraph MILVUS_G["Milvus 2.4+ — 向量知识库"]
+            V1["安全规范知识"]
+            V2["事故/整改案例"]
+            V3["设备/环境案例"]
+            V4["行为摘要记忆(二期)"]
+        end
+        subgraph TSDB_G["时序库 — InfluxDB/TDengine"]
+            T1["基坑监测"]
+            T2["扬尘噪声"]
+            T3["风速温湿度"]
+            T4["设备运行·塔吊"]
+        end
+    end
+
+    subgraph SYNC_L["最终一致性同步"]
+        S1["画像完成→event"]
+        S2["MySQL写→Redis刷"]
+        S3["→Neo4j异步更新"]
+        S4["→Milvus异步向量化"]
+    end
+
+    APP_L --> CACHE_L
+    CACHE_L --> STORE_L
+    SYNC_L --> STORE_L
+
+    style APP_L fill:#fff7e6,stroke:#fa8c16,stroke-width:2px,rx:10
+    style CACHE_L fill:#fff0f6,stroke:#eb2f96,stroke-width:2px,rx:10
+    style STORE_L fill:#e8f4fd,stroke:#3b7ddd,stroke-width:2px,rx:10
+    style SYNC_L fill:#f0ffe6,stroke:#52c41a,stroke-width:2px,rx:10
+    style MYSQL_G fill:#e6f0ff,stroke:#3b7ddd
+    style NEO4J_G fill:#f0e6ff,stroke:#722ed1
+    style MILVUS_G fill:#fff3e6,stroke:#fa8c16
+    style TSDB_G fill:#e6fff0,stroke:#13c2c2
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 4. 三类画像 ==================== -->
+<div class="section" id="s4">
+  <div class="section-header">
+    <div class="section-num num-profile">四</div>
+    <h2>三类安全风险画像体系全景图</h2>
+    <span class="section-tag tag-core">核心</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+flowchart TB
+    subgraph PP["🏗️ 项目安全风险画像（人·机·环·管·投入·进度·应急）"]
+        direction TB
+        PP1["隐患与整改 22%"]
+        PP2["高危作业 16%"]
+        PP3["分包商传导 14%"]
+        PP4["设备机械 12%"]
+        PP5["进度压力 10%"]
+        PP6["环境监测 8%"]
+        PP7["现场行为 8%"]
+        PP8["管理配置 6%"]
+        PP9["安全投入 4%"]
+    end
+
+    subgraph WP["👷 工人安全风险画像（考核·违规·资质·健康·年龄·场景）"]
+        direction TB
+        WP1["安全考核 25%"]
+        WP2["违规行为 35%"]
+        WP3["作业资质 15%"]
+        WP4["体检健康 10%"]
+        WP5["年龄适配 5%"]
+        WP6["场景修正 10%"]
+    end
+
+    subgraph SP["🏢 分包商安全风险画像（资质·人员·整改·违规·设备·管理·投入·应急·信用·传导）"]
+        direction TB
+        SP1["资质准入 15%"]
+        SP2["人员管理 18%"]
+        SP3["隐患整改 22%"]
+        SP4["违规行为 12%"]
+        SP5["设备管理 10%"]
+        SP6["管理配置 8%"]
+        SP7["安全投入 5%"]
+        SP8["应急能力 5%"]
+        SP9["事故信用 5%"]
+    end
+
+    subgraph FORMULA["⚡ 风险计算公式"]
+        F["最终风险分 = min(100, 基础加权分 × 动态修正系数 + 强规则触发分)"]
+    end
+
+    subgraph STRONG["🔴 强规则引擎（最高优先级 / 不可被LLM覆盖）"]
+        R1["重大隐患超期"]
+        R2["无证特种作业"]
+        R3["设备超期未检"]
+        R4["危大工程未审批"]
+        R5["极端天气高危作业"]
+        R6["体检过期/职业禁忌"]
+    end
+
+    subgraph LEVEL["📊 四级风险等级"]
+        L0["🟢 0-30 低风险 → 常规管理"]
+        L1["🟡 31-60 中风险 → 加强跟踪"]
+        L2["🟠 61-80 高风险 → 重点管控"]
+        L3["🔴 81-100 极高 → 立即干预"]
+    end
+
+    PP & WP & SP --> FORMULA
+    FORMULA --> LEVEL
+    STRONG -.->|"直接触发·升档"| LEVEL
+    STRONG -.->|"直接触发·升档"| FORMULA
+
+    style PP fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px,rx:10
+    style WP fill:#f5edff,stroke:#722ed1,stroke-width:2px,rx:10
+    style SP fill:#fff7e6,stroke:#fa8c16,stroke-width:2px,rx:10
+    style FORMULA fill:#f0ffe6,stroke:#52c41a,stroke-width:2px,rx:10
+    style STRONG fill:#fff0f0,stroke:#f5222d,stroke-width:2px,rx:10
+    style LEVEL fill:#fafbfc,stroke:#666,stroke-width:2px,rx:10
+    style F fill:#d9f7be,stroke:#389e0d
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 5. Agent 协同 ==================== -->
+<div class="section" id="s5">
+  <div class="section-header">
+    <div class="section-num num-agent">五</div>
+    <h2>多 Agent 协同架构图</h2>
+    <span class="section-tag tag-updated">V1.7 更新</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+flowchart TB
+    subgraph USER_IN["用户交互入口"]
+        direction LR
+        U1["Web端提问"]
+        U2["企业微信提问"]
+        U3["API调用"]
+        U4["定时任务触发"]
+    end
+
+    subgraph MASTER["🧭 主控 Agent（意图识别→权限校验→DAG分解→路由→汇总）"]
+        direction LR
+        M1["意图识别"]
+        M2["权限+组织域校验"]
+        M3["DAG任务分解<br/>并行/串行判定"]
+        M4["工具路由"]
+        M5["冲突仲裁"]
+        M6["结果汇总+人工确认"]
+    end
+
+    subgraph CORE["核心 Agent ×6（MVP）"]
+        direction LR
+        AG1["💬 智能问数<br/>NL2SQL+解释"]
+        AG2["📊 画像分析<br/>风险解释+趋势"]
+        AG3["🔧 隐患整改<br/>分类定级+建议"]
+        AG4["⚠️ 风险预警<br/>强规则+阈值"]
+        AG5["📝 报告生成<br/>周报+评价报告"]
+        AG6["🎓 培训出题<br/>场景化出题"]
+    end
+
+    subgraph TOOLS_M["工具模块 ×7（由 Agent 调用）"]
+        direction LR
+        T1["设备安全"]
+        T2["环境监测"]
+        T3["进度压力"]
+        T4["安全投入"]
+        T5["应急管理"]
+        T6["管理配置"]
+        T7["案例检索"]
+    end
+
+    subgraph KNOW["知识/数据底座"]
+        direction LR
+        K1["指标语义层"]
+        K2["四库协同"]
+        K3["强规则库"]
+        K4["事故案例库"]
+        K5["Agent记忆"]
+    end
+
+    USER_IN --> MASTER
+    MASTER --> CORE
+    CORE --> TOOLS_M
+    CORE --> KNOW
+    TOOLS_M --> KNOW
+    CORE -.->|"输出→主控汇总"| MASTER
+    MASTER --> USER_IN
+
+    style USER_IN fill:#fff0f6,stroke:#eb2f96,stroke-width:2px,rx:10
+    style MASTER fill:#ede0ff,stroke:#722ed1,stroke-width:3px,rx:10
+    style CORE fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px,rx:10
+    style TOOLS_M fill:#fff7e6,stroke:#fa8c16,stroke-width:2px,rx:10
+    style KNOW fill:#f0ffe6,stroke:#52c41a,stroke-width:2px,rx:10
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 6. Agent 记忆系统 ==================== -->
+<div class="section" id="s6">
+  <div class="section-header">
+    <div class="section-num num-memory">六</div>
+    <h2>Agent 记忆与上下文管理机制（四层架构）</h2>
+    <span class="section-tag tag-new">V1.7 新增</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+flowchart TB
+    subgraph PRINCIPLE["设计原则"]
+        P1["❌ 不建泛化LLM长期记忆"]
+        P2["✅ 能查表的不写入记忆"]
+        P3["✅ 能靠规则的不依赖推断"]
+        P4["✅ 案例为组织资产，非Agent私有"]
+        P5["✅ 所有判断以L4结构化事实为准"]
+    end
+
+    subgraph L1["L1 会话记忆 — Session Memory"]
+        L1D["Redis存储·30min~2h过期"]
+        L1C["最近5-10轮摘要·project_id·time_range·last_intent·ref_id"]
+        L1U["用途：多轮连续追问<br/>禁止存储：大SQL结果·健康明细·原始视频"]
+
+    end
+
+    subgraph L2["L2 任务状态记忆 — Working Memory"]
+        L2D["Redis + MySQL审计双写"]
+        L2C["task_id·status·sub_tasks·result_ref·error·timeout_flag"]
+        L2U["用途：长任务编排·失败恢复<br/>Agent Checkpoint·状态审计"]
+
+    end
+
+    subgraph L3["L3 语义摘要记忆 — Semantic Memory（二期）"]
+        L3D["Milvus + MySQL标签"]
+        L3C["工人错题摘要·培训薄弱点·违规摘要·案例检索"]
+        L3U["用途：个性化培训·行为提醒<br/>前提：合规治理完善后启用"]
+
+    end
+
+    subgraph L4["L4 结构化事实 — Structured State（非LLM记忆）"]
+        L4D["MySQL + Neo4j + 规则引擎"]
+        L4C["三类画像·隐患台账·工单·考核·违规·图谱·规则日志"]
+        L4U["所有关键判断的唯一事实依据<br/>Agent解释只能引用L4检索结果"]
+
+    end
+
+    PRINCIPLE --> L1
+    L1 --> L2
+    L2 --> L3
+    L3 --> L4
+
+    style PRINCIPLE fill:#fff0f0,stroke:#f5222d,stroke-width:2px,rx:10
+    style L1 fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px,rx:10
+    style L2 fill:#fff7e6,stroke:#fa8c16,stroke-width:2px,rx:10
+    style L3 fill:#f5edff,stroke:#722ed1,stroke-width:2px,rx:10
+    style L4 fill:#f0ffe6,stroke:#52c41a,stroke-width:2px,rx:10
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 7. 多租户隔离 ==================== -->
+<div class="section" id="s7">
+  <div class="section-header">
+    <div class="section-num num-tenant">七</div>
+    <h2>集团多级组织域与多租户隔离设计</h2>
+    <span class="section-tag tag-new">V1.7 新增</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+flowchart TB
+    subgraph ORG["集团多级组织域"]
+        direction TB
+        CSCEC["🏢 中建集团 tenant_id=CSCEC"]
+        BUREAU["工程局/专业公司<br/>tenant_id=CSCEC-8B"]
+        REGION["区域公司<br/>org_path=.../EAST-REGION"]
+        PROJECT["项目部<br/>org_path=.../PROJECT-P001"]
+        SUBCON["分包商<br/>org_path=.../SUB-S001"]
+        TEAM["班组<br/>归属关系节点"]
+        WORKER["工人<br/>org_path末端"]
+    end
+
+    subgraph ISOLATION["隔离机制"]
+        direction TB
+        I1["行级过滤<br/>所有表带tenant_id+org_path"]
+        I2["SQL注入<br/>WHERE tenant_id=:tid AND org_path LIKE :path%"]
+        I3["Agent校验<br/>工具调用前完成组织域+角色+项目范围校验"]
+        I4["NL2SQL约束<br/>仅授权数据范围内生成受控查询"]
+        I5["敏感数据<br/>最小授权·不因上级可看统计而开放明细"]
+    end
+
+    subgraph CONFIG["差异化配置继承"]
+        direction TB
+        C1["集团默认配置（红线不可关闭）"]
+        C2["⬇️ 工程局配置（可调高敏感度）"]
+        C3["⬇️ 区域公司配置"]
+        C4["⬇️ 项目配置（最高优先级）"]
+        C5["冲突规则：强规则集团红线不得被下级关闭"]
+    end
+
+    CSCEC --> BUREAU --> REGION --> PROJECT --> SUBCON --> TEAM --> WORKER
+    ISOLATION --> ORG
+    CONFIG --> ORG
+
+    style ORG fill:#e8f4fd,stroke:#3b7ddd,stroke-width:2px,rx:10
+    style ISOLATION fill:#f0ffe6,stroke:#52c41a,stroke-width:2px,rx:10
+    style CONFIG fill:#fff7e6,stroke:#fa8c16,stroke-width:2px,rx:10
+    style CSCEC fill:#1a3a5c,color:#fff
+    style BUREAU fill:#3b7ddd,color:#fff
+    style REGION fill:#52c41a,color:#fff
+    style PROJECT fill:#fa8c16,color:#fff
+    style SUBCON fill:#722ed1,color:#fff
+    style TEAM fill:#eb2f96,color:#fff
+    style WORKER fill:#13c2c2,color:#fff
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 8. 业务闭环 ==================== -->
+<div class="section" id="s8">
+  <div class="section-header">
+    <div class="section-num num-loop">八</div>
+    <h2>核心业务全景闭环流程图</h2>
+    <span class="section-tag tag-core">核心</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+flowchart TD
+    A["📡 多源数据接入<br/>12系统·5模式<br/>日批全量+事件增量"] --> B
+    B["🔧 数据治理<br/>统一ID映射·质量6维校验<br/>主数据归属·缺失处理"] --> C
+    C["📐 指标语义层计算<br/>指标定义·维度映射<br/>权限标签·血缘·别名"] --> D
+    D["🧮 画像模型计算<br/>日批全量(2000项目≤2h)<br/>项目|工人|分包商"] --> E
+    E{"⚡ 强规则引擎<br/>30+规则·版本管理<br/>是否触发高风险?"} 
+    E -->|"是"| G["🤖 Agent解释与建议<br/>画像分析|隐患整改|预警<br/>事实锚定|引用溯源|置信度"]
+    E -->|"否"| H["📊 常规监控<br/>驾驶舱展示<br/>趋势跟踪"]
+    G --> I["📋 工单生成派发<br/>整改|预警督办|培训<br/>约谈|作业限制|设备核查"]
+    I --> J["👤 人工执行<br/>整改·培训·复查<br/>OA审批联动"]
+    J --> K{"✅ 复查验收"}
+    K -->|"通过"| L
+    K -->|"不通过"| I
+    L["📁 案例沉淀<br/>整改案例入库<br/>事故案例标注"]
+    L --> M["📈 模型校准回测<br/>权重调优·规则更新<br/>贝叶斯先验·偏差检测"]
+    M --> D
+    H --> D
+
+    style A fill:#e6f0ff,stroke:#3b7ddd
+    style B fill:#e6f0ff,stroke:#3b7ddd
+    style C fill:#e6f0ff,stroke:#3b7ddd
+    style D fill:#f0ffe6,stroke:#52c41a
+    style E fill:#fff0f0,stroke:#f5222d
+    style G fill:#f5edff,stroke:#722ed1
+    style I fill:#fff7e6,stroke:#fa8c16
+    style J fill:#fff7e6,stroke:#fa8c16
+    style L fill:#f0ffe6,stroke:#52c41a
+    style M fill:#f0ffe6,stroke:#52c41a
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 9. 隐患整改 ==================== -->
+<div class="section" id="s9">
+  <div class="section-header">
+    <div class="section-num num-loop">九</div>
+    <h2>隐患整改与工单督办闭环图</h2>
+    <span class="section-tag tag-core">核心</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+flowchart LR
+    subgraph DISCOVER["🔍 隐患发现源"]
+        direction TB
+        D1["👁️巡检发现"]
+        D2["📹视频AI识别"]
+        D3["👷工人反馈"]
+        D4["⚙️设备报警"]
+        D5["🌡️环境监测"]
+    end
+
+    subgraph AI["🤖 Agent智能处理"]
+        direction TB
+        P1["分类定级<br/>识别责任主体"]
+        P2["整改措施<br/>确定期限+规范依据"]
+        P3["复查要点<br/>关联规范条款"]
+        P4["⏬生成工单派发"]
+    end
+
+    subgraph WF["📋 工单状态机（7类工单）"]
+        direction TB
+        W1["待确认"] --> W2["已派发"]
+        W2 --> W3["执行中"]
+        W3 --> W4["待复查"]
+        W4 -->|"通过"| W5["已闭环 ✅"]
+        W4 -->|"不通过"| W3
+        W1 -.-> W6["驳回"]
+        W2 -.-> W7["转派"]
+        W3 -.->|"超期"| W8["超期升级 ⚡"]
+    end
+
+    subgraph ESC["🚨 三级超时升级"]
+        direction TB
+        E1["+1天→项目安全员"]
+        E2["+3天→项目经理/区域"]
+        E3["+7天→集团安全部"]
+        E1 --> E2 --> E3
+    end
+
+    DISCOVER --> AI --> WF
+    W8 --> ESC
+
+    style DISCOVER fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px,rx:10
+    style AI fill:#f5edff,stroke:#722ed1,stroke-width:2px,rx:10
+    style WF fill:#fff7e6,stroke:#fa8c16,stroke-width:2px,rx:10
+    style ESC fill:#fff0f0,stroke:#f5222d,stroke-width:2px,rx:10
+    style W5 fill:#d9f7be,stroke:#389e0d
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 10. NL2SQL ==================== -->
+<div class="section" id="s10">
+  <div class="section-header">
+    <div class="section-num num-agent">十</div>
+    <h2>指标语义层与 NL2SQL 智能问数架构</h2>
+    <span class="section-tag tag-updated">V1.7 增强</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+flowchart TB
+    subgraph QUERY["用户自然语言提问"]
+        Q1["\"A项目本周风险为什么升高?\""]
+        Q2["\"各分包商整改超期率排名?\""]
+        Q3["\"高风险工人占比趋势如何?\""]
+    end
+
+    subgraph NL2SQL["NL2SQL 处理链路（8步）"]
+        direction TB
+        N1["①意图识别<br/>提取实体·时间·指标"]
+        N2["②歧义澄清<br/>指标歧义·维度歧义"]
+        N3["③指标匹配<br/>查询语义层·权限过滤"]
+        N4["④Schema Linking<br/>列选择·表关联"]
+        N5["⑤SQL生成<br/>多表·聚合·对比"]
+        N6["⑥白名单+SQL审计<br/>AST校验·注入防护"]
+        N7["⑦执行查询<br/>分级超时·P99≤15s"]
+        N8["⑧结果解释<br/>自然语言转述·引用溯源"]
+    end
+
+    subgraph METRIC["指标语义层（7大模块）"]
+        direction TB
+        M1["📋 指标定义<br/>编码·名称·口径·公式"]
+        M2["📐 维度定义<br/>项目类型·阶段·区域"]
+        M3["🗺️ 数据源映射<br/>表→字段→过滤"]
+        M4["🔐 权限标签<br/>角色可查范围"]
+        M5["🔗 血缘关系<br/>指标→原始数据"]
+        M6["📖 NL2SQL映射<br/>别名·同义词"]
+        M7["📝 版本管理<br/>变更记录·历史口径"]
+    end
+
+    QUERY --> NL2SQL
+    NL2SQL <--> METRIC
+    N3 --> METRIC
+
+    style QUERY fill:#fff0f6,stroke:#eb2f96,stroke-width:2px,rx:10
+    style NL2SQL fill:#f5edff,stroke:#722ed1,stroke-width:2px,rx:10
+    style METRIC fill:#f0ffe6,stroke:#52c41a,stroke-width:2px,rx:10
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 11. Prompt 工程 ==================== -->
+<div class="section" id="s11">
+  <div class="section-header">
+    <div class="section-num num-agent">十一</div>
+    <h2>Prompt Engineering 规范与组装策略</h2>
+    <span class="section-tag tag-new">V1.7 新增</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+flowchart TB
+    subgraph INPUT["输入变量注入"]
+        direction LR
+        IV1["user_role·tenant_id<br/>org_path·data_scope"]
+        IV2["project_id·time_range<br/>risk_level·metric_code"]
+        IV3["强规则列表·案例引用<br/>置信度·依赖指标"]
+    end
+
+    subgraph ASSEMBLY["Prompt 组装策略（System + Context + Dynamic）"]
+        direction TB
+        A1["System Prompt（固定）<br/>角色定义·领域边界·输出格式·安全约束"]
+        A2["Context Prompt（准静态）<br/>组织域·指标定义·规则摘要·权限范围"]
+        A3["Dynamic Prompt（每次注入）<br/>用户问题·当前对象·时间范围·会话上下文"]
+    end
+
+    subgraph AGENTS["6个核心Agent Prompt骨架"]
+        direction LR
+        AG1["主控Agent<br/>意图识别·DAG分解<br/>路由·冲突仲裁"]
+        AG2["问数Agent<br/>NL2SQL·指标映射<br/>结果解释"]
+        AG3["画像Agent<br/>风险分解·趋势<br/>多维度归因"]
+        AG4["整改Agent<br/>分类定级·措施<br/>规范引用"]
+        AG5["预警Agent<br/>规则匹配·阈值<br/>升级建议"]
+        AG6["报告Agent<br/>模板选择·数据<br/>结构化输出"]
+    end
+
+    subgraph GOV["Prompt 治理"]
+        direction LR
+        GV1["版本管理<br/>prompt_version+model_version"]
+        GV2["灰度发布<br/>按租户/组织域/Agent灰度"]
+        GV3["评测门禁<br/>准确率·安全率·可用率"]
+        GV4["回滚机制<br/>保留上一稳定版本"]
+    end
+
+    INPUT --> ASSEMBLY
+    ASSEMBLY --> AGENTS
+    GOV --> AGENTS
+
+    style INPUT fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px,rx:10
+    style ASSEMBLY fill:#f0ffe6,stroke:#52c41a,stroke-width:2px,rx:10
+    style AGENTS fill:#f5edff,stroke:#722ed1,stroke-width:2px,rx:10
+    style GOV fill:#fff7e6,stroke:#fa8c16,stroke-width:2px,rx:10
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 12. Agent 安全攻防 ==================== -->
+<div class="section" id="s12">
+  <div class="section-header">
+    <div class="section-num num-rule">十二</div>
+    <h2>Agent 安全攻防设计</h2>
+    <span class="section-tag tag-new">V1.7 新增</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+flowchart TB
+    subgraph ATTACK["威胁模型"]
+        direction LR
+        AT1["Prompt Injection<br/>指令注入·角色绕过"]
+        AT2["越权问数<br/>跨组织域·跨项目查询"]
+        AT3["工具参数污染<br/>恶意参数·SQL注入"]
+        AT4["敏感输出泄漏<br/>健康·定位·人脸"]
+    end
+
+    subgraph DEFENSE["三层防护体系"]
+        subgraph LAYER1["前置拦截层"]
+            D1["输入清洗<br/>关键词过滤·编码检测"]
+            D2["组织域注入<br/>强制注入tenant_id+org_path"]
+            D3["角色上下文<br/>验证data_scope合法性"]
+        end
+        subgraph LAYER2["执行中校验层"]
+            D4["SQL AST审计<br/>白名单校验·禁止DML"]
+            D5["工具参数校验<br/>类型·范围·枚举·长度"]
+            D6["权限实时校验<br/>每次工具调用前验证"]
+        end
+        subgraph LAYER3["输出后过滤层"]
+            D7["敏感输出过滤<br/>正则·NER·脱敏"]
+            D8["置信度标记<br/>低置信度强制人工复核"]
+            D9["审计留痕<br/>task_id·model·prompt·证据"]
+        end
+    end
+
+    subgraph RESULT["安全效果"]
+        R1["Prompt Injection 拦截率 ≥99%"]
+        R2["越权问数拦截率 100%"]
+        R3["SQL注入防护率 100%"]
+        R4["敏感输出过滤率 ≥99.5%"]
+    end
+
+    ATTACK --> DEFENSE
+    DEFENSE --> RESULT
+
+    style ATTACK fill:#fff0f0,stroke:#f5222d,stroke-width:2px,rx:10
+    style DEFENSE fill:#e8f4fd,stroke:#3b7ddd,stroke-width:2px,rx:10
+    style RESULT fill:#f0ffe6,stroke:#52c41a,stroke-width:2px,rx:10
+    style LAYER1 fill:#fff7e6,stroke:#fa8c16
+    style LAYER2 fill:#e6f0ff,stroke:#3b7ddd
+    style LAYER3 fill:#f5edff,stroke:#722ed1
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 13. 反馈学习 ==================== -->
+<div class="section" id="s13">
+  <div class="section-header">
+    <div class="section-num num-loop">十三</div>
+    <h2>反馈学习与持续优化闭环</h2>
+    <span class="section-tag tag-new">V1.7 新增</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+flowchart TB
+    subgraph COLLECT["反馈收集"]
+        direction LR
+        FB1["👍 用户点赞/点踩"]
+        FB2["✏️ 人工修正<br/>风险等级·整改建议"]
+        FB3["📋 复查反馈<br/>画像准确率·预警有效性"]
+        FB4["🔍 幻觉抽检<br/>高风险解释≥10%人工复核"]
+    end
+
+    subgraph ANALYZE["分析归类"]
+        direction TB
+        AN1["短期优化<br/>Prompt调优·规则更新<br/>指标口径修正"]
+        AN2["中期优化<br/>微调样本积累<br/>benchmark更新"]
+        AN3["长期优化<br/>权重校准·贝叶斯先验<br/>模型版本迭代"]
+    end
+
+    subgraph EXECUTE["执行闭环"]
+        direction TB
+        EX1["Prompt版本发布<br/>灰度→全量→回滚"]
+        EX2["指标字典更新<br/>审批→发布→通知"]
+        EX3["规则库版本发布<br/>测试→审批→上线"]
+        EX4["模型微调/替换<br/>评测门禁→灰度→全量"]
+        EX5["权重校准<br/>回测验证→专家评审→生效"]
+    end
+
+    COLLECT --> ANALYZE
+    ANALYZE --> EXECUTE
+    EXECUTE -.->|"效果监控"| COLLECT
+
+    style COLLECT fill:#fff0f6,stroke:#eb2f96,stroke-width:2px,rx:10
+    style ANALYZE fill:#f5edff,stroke:#722ed1,stroke-width:2px,rx:10
+    style EXECUTE fill:#f0ffe6,stroke:#52c41a,stroke-width:2px,rx:10
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 14. LLM 私有化部署 ==================== -->
+<div class="section" id="s14">
+  <div class="section-header">
+    <div class="section-num num-deploy">十四</div>
+    <h2>LLM 私有化部署与模型分级方案</h2>
+    <span class="section-tag tag-new">V1.7 新增</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+flowchart TB
+    subgraph STRATEGY["部署策略"]
+        direction LR
+        S1["🏢 私有化部署<br/>数据不出域·可审计<br/>GPU成本高·运维复杂<br/>→ 敏感数据首选"]
+        S2["☁️ 专有云API<br/>建设快·弹性好<br/>需合同+安全评估<br/>→ 试点/非敏感"]
+        S3["🌐 公有API<br/>能力强·迭代快<br/>数据出域风险高<br/>→ 不建议生产"]
+    end
+
+    subgraph TIER["模型分级（按任务复杂度）"]
+        direction TB
+        T1["L1 轻量 7B-14B<br/>意图识别·路由·澄清<br/>→ 本地小模型/规则"]
+        T2["L2 中等 14B-32B Coder<br/>NL2SQL草案生成<br/>→ 微调模型+语义层约束"]
+        T3["L3 重量 32B-70B<br/>画像解释·整改建议·报告<br/>→ 强中文表达+领域推理"]
+        T4["L4 超重 70B+ 专家<br/>复杂归因·跨项目分析<br/>→ 异步执行+人工复核"]
+        T5["Embedding/Rerank<br/>BGE-M3·bge-reranker·M3E<br/>→ 固定版本·记录向量版本"]
+    end
+
+    subgraph GPU["GPU资源估算"]
+        direction TB
+        G1["MVP试点<br/>A100 40G×2-4<br/>或同级国产GPU<br/>14B-32B量化+embedding"]
+        G2["区域推广<br/>A100 80G×4-8<br/>32B多副本<br/>部分70B量化"]
+        G3["集团生产<br/>A100/H800×8+<br/>国产等效集群<br/>按并发+上下文压测"]
+    end
+
+    subgraph GOV_L["模型治理"]
+        direction LR
+        GL1["版本登记<br/>model_name·version·quantization"]
+        GL2["灰度发布<br/>按租户/组织域/Agent灰度"]
+        GL3["回滚机制<br/>保留上一稳定版本"]
+        GL4["评测门禁<br/>达标后上线"]
+        GL5["推理审计<br/>task_id·model·prompt·证据"]
+    end
+
+    STRATEGY --> TIER
+    TIER --> GPU
+    GPU --> GOV_L
+
+    style STRATEGY fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px,rx:10
+    style TIER fill:#f5edff,stroke:#722ed1,stroke-width:2px,rx:10
+    style GPU fill:#fff7e6,stroke:#fa8c16,stroke-width:2px,rx:10
+    style GOV_L fill:#f0ffe6,stroke:#52c41a,stroke-width:2px,rx:10
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 15. 物理部署架构 ==================== -->
+<div class="section" id="s15">
+  <div class="section-header">
+    <div class="section-num num-deploy">十五</div>
+    <h2>物理部署架构与高可用设计</h2>
+    <span class="section-tag tag-new">V1.7 新增</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+flowchart TB
+    subgraph USER_ZONE["用户访问区"]
+        direction LR
+        WEB["Web / 移动端"]
+        WX["企业微信"]
+        SCREEN["驾驶舱大屏"]
+    end
+
+    subgraph APP_ZONE["K8s 应用服务区（无状态·多副本·滚动发布）"]
+        direction TB
+        GW["API Gateway + WAF"]
+        AUTH2["统一认证·权限服务"]
+        AGT["Agent编排服务"]
+        MET["指标语义层服务"]
+        PROF["画像计算服务"]
+        WO["工单服务"]
+        RPT["报告服务"]
+    end
+
+    subgraph DATA_ZONE["数据中间件集群（高可用）"]
+        direction TB
+        MYSQL2["MySQL MGR<br/>RTO≤30min RPO≤5min"]
+        REDIS2["Redis Cluster<br/>RTO≤10min RPO≤5min"]
+        NEO4J2["Neo4j Causal Cluster<br/>RTO≤1h RPO≤15min"]
+        MILVUS2["Milvus集群<br/>RTO≤1h RPO≤15min"]
+        TSDB2["时序库集群"]
+        MQ2["Kafka/RocketMQ<br/>RTO≤15min RPO≤5min"]
+    end
+
+    subgraph GPU_ZONE["GPU 推理集群"]
+        direction TB
+        LLM1["LLM推理服务<br/>vLLM/TGI/Triton<br/>RTO≤30min"]
+        EMB["Embedding服务"]
+    end
+
+    subgraph OPS_ZONE["运维观测"]
+        direction TB
+        LOG["日志·监控·告警"]
+        TRACE["链路追踪"]
+        BACKUP["备份·灾备"]
+    end
+
+    USER_ZONE --> APP_ZONE
+    APP_ZONE --> DATA_ZONE
+    APP_ZONE --> GPU_ZONE
+    DATA_ZONE --> OPS_ZONE
+    GPU_ZONE --> OPS_ZONE
+
+    style USER_ZONE fill:#fff0f6,stroke:#eb2f96,stroke-width:2px,rx:10
+    style APP_ZONE fill:#e8f4fd,stroke:#3b7ddd,stroke-width:2px,rx:10
+    style DATA_ZONE fill:#fff7e6,stroke:#fa8c16,stroke-width:2px,rx:10
+    style GPU_ZONE fill:#f5edff,stroke:#722ed1,stroke-width:2px,rx:10
+    style OPS_ZONE fill:#f0ffe6,stroke:#52c41a,stroke-width:2px,rx:10
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 16. 数据质量 ==================== -->
+<div class="section" id="s16">
+  <div class="section-header">
+    <div class="section-num num-flow">十六</div>
+    <h2>数据质量治理与缺失处理机制</h2>
+    <span class="section-tag tag-core">核心</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+flowchart TB
+    subgraph DQ["数据质量六维评估"]
+        direction LR
+        DQ1["完整性<br/>必填字段"]
+        DQ2["准确性<br/>业务逻辑"]
+        DQ3["时效性<br/>SLA监控"]
+        DQ4["一致性<br/>跨系统主数据"]
+        DQ5["唯一性<br/>重复检查"]
+        DQ6["可追溯性<br/>来源溯源"]
+    end
+
+    subgraph MISSING["缺失处理策略"]
+        direction LR
+        MS1["维度无数据<br/>→权重重分配"]
+        MS2["关键字段缺失<br/>→低置信度+人工复核"]
+        MS3["工人<7天<br/>→仅观察标签"]
+        MS4["新分包商<br/>→基准+当前表现"]
+        MS5["IoT中断<br/>→质量告警"]
+        MS6["上游延迟<br/>→快照+stale"]
+    end
+
+    subgraph ALERT_Q["质量告警触发"]
+        direction LR
+        QA1["同步失败×3→通知"]
+        QA2["缺失>10%→暂停预警"]
+        QA3["IoT中断>30min→告警"]
+        QA4["置信度低→人工确认"]
+    end
+
+    subgraph OUTPUT["画像输出必含"]
+        direction LR
+        O1["风险分+等级"]
+        O2["完整度+置信度"]
+        O3["缺失数据说明"]
+        O4["建议人工复核标识"]
+    end
+
+    DQ --> MISSING
+    MISSING --> ALERT_Q
+    MISSING --> OUTPUT
+
+    style DQ fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px,rx:10
+    style MISSING fill:#fff7e6,stroke:#fa8c16,stroke-width:2px,rx:10
+    style ALERT_Q fill:#fff0f0,stroke:#f5222d,stroke-width:2px,rx:10
+    style OUTPUT fill:#f0ffe6,stroke:#52c41a,stroke-width:2px,rx:10
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 17. 技术栈 ==================== -->
+<div class="section" id="s17">
+  <div class="section-header">
+    <div class="section-num num-tech">十七</div>
+    <h2>技术栈全景图</h2>
+    <span class="section-tag tag-updated">V1.7 更新</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+flowchart LR
+    subgraph AI["🤖 AI/ML引擎"]
+        AI1["LLM<br/>Qwen·DeepSeek·GLM"]
+        AI2["NL2SQL<br/>SQLCoder·微调"]
+        AI3["Embedding<br/>BGE-M3·bge-reranker"]
+        AI4["CV模型<br/>YOLO·PaddleDetection"]
+        AI5["贝叶斯<br/>归因推理"]
+    end
+
+    subgraph AGT_FW["🧭 Agent框架"]
+        AF1["LangGraph<br/>状态机+Checkpoint"]
+        AF2["LangChain<br/>工具链"]
+        AF3["FastAPI自研<br/>编排服务"]
+    end
+
+    subgraph DATA_S["💾 数据存储"]
+        DS1["MySQL 8.0"]
+        DS2["Neo4j 5.x"]
+        DS3["Milvus 2.4+"]
+        DS4["Redis 7.x"]
+        DS5["InfluxDB/TDengine"]
+    end
+
+    subgraph INFRA["⚙️ 基础设施"]
+        IF1["Airflow/Dolphin<br/>计算调度"]
+        IF2["Kafka/RabbitMQ<br/>消息队列"]
+        IF3["Drools/自研<br/>规则引擎"]
+        IF4["vLLM/TGI<br/>推理框架"]
+        IF5["K8s<br/>容器编排"]
+    end
+
+    subgraph VIS["🎨 可视化"]
+        VS1["Vue3 前端"]
+        VS2["ECharts 图表"]
+        VS3["FineBI/Superset"]
+    end
+
+    AI --> AGT_FW --> DATA_S --> INFRA --> VIS
+
+    style AI fill:#f5edff,stroke:#722ed1,stroke-width:2px,rx:10
+    style AGT_FW fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px,rx:10
+    style DATA_S fill:#f0ffe6,stroke:#52c41a,stroke-width:2px,rx:10
+    style INFRA fill:#fff7e6,stroke:#fa8c16,stroke-width:2px,rx:10
+    style VIS fill:#fff0f6,stroke:#eb2f96,stroke-width:2px,rx:10
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 18. 全景一张图 ==================== -->
+<div class="section" id="s18">
+  <div class="section-header">
+    <div class="section-num num-layer">十八</div>
+    <h2>平台全景一张图（Summary）</h2>
+    <span class="section-tag tag-core">总览</span>
+  </div>
+  <div class="section-body">
+    <div class="mermaid">
+flowchart TB
+    CENTER["🏗️ 中建集团项目工地安全智能平台 V1.7<br/><br/>核心公式：风险分 = min(100, 基础加权分×动态修正+强规则触发分)<br/><br/>覆盖：人·机·环·管·投入·进度·应急<br/>2000+项目 | 50万+工人 | 5000+分包商 | 年300万+隐患<br/><br/>Agent 记忆四层：会话→任务→语义→结构化事实"]
+
+    subgraph LEFT["← 上游数据源与治理"]
+        L1["12个上游系统·5种集成模式<br/>API/MQ/文件/IoT/Webhook"]
+        L2["统一ID体系·主数据归属<br/>6维数据质量校验"]
+        L3["多租户隔离·组织域过滤<br/>tenant_id + org_path"]
+    end
+
+    subgraph RIGHT["→ 下游应用与闭环"]
+        R1["Web·移动端·企业微信·大屏"]
+        R2["三类画像·智能问数<br/>隐患整改·报告生成·培训"]
+        R3["7类工单闭环<br/>企业微信/OA/隐患回写"]
+        R4["OpenAPI + Webhook"]
+    end
+
+    subgraph BOTTOM["↓ 技术底座"]
+        B1["四库协同+时序库<br/>MySQL+Neo4j+Milvus+Redis+TDengine"]
+        B2["指标语义层+NL2SQL<br/>Prompt工程·Agent编排"]
+        B3["多Agent体系<br/>主控+6核心+7工具+记忆管理"]
+        B4["LLM私有化部署<br/>模型分级·GPU规划·灰度发布"]
+    end
+
+    subgraph TOP["↑ 治理与安全"]
+        T1["强规则引擎·30+规则"]
+        T2["Agent安全攻防·3层防护"]
+        T3["反馈学习·持续优化"]
+        T4["事故案例库·回测验证"]
+        T5["模型治理·偏差检测·审计"]
+        T6["合规·脱敏·辅助决策声明"]
+    end
+
+    LEFT --> CENTER
+    RIGHT --> CENTER
+    BOTTOM --> CENTER
+    CENTER --> TOP
+
+    style CENTER fill:linear-gradient(135deg,#0d2137,#1a3a5c,#1e4d7b),color:#fff,stroke:#0d2137,stroke-width:4px,rx:16
+    style LEFT fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px,rx:10
+    style RIGHT fill:#fff7e6,stroke:#fa8c16,stroke-width:2px,rx:10
+    style BOTTOM fill:#f5edff,stroke:#722ed1,stroke-width:2px,rx:10
+    style TOP fill:#f0ffe6,stroke:#52c41a,stroke-width:2px,rx:10
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  <p>中建集团项目工地安全智能平台 · 技术开发文档 V1.7 Agent工程化与基础设施落地增强版 · 2026年6月</p>
+</div>
+
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'base',
+  themeVariables: {
+    fontFamily: '"Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif',
+    fontSize: '13px',
+    primaryColor: '#e6f0ff',
+    primaryBorderColor: '#3b7ddd',
+    primaryTextColor: '#2c3e50',
+    lineColor: '#a0b4c8',
+    secondaryColor: '#f0ffe6',
+    tertiaryColor: '#f5edff',
+  },
+  flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis', padding: 12 },
+  gantt: { useMaxWidth: true }
+});
+</script>
+
+</body>
+</html>

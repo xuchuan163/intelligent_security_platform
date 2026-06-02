@@ -1,0 +1,12 @@
+﻿.venv/
+__pycache__/
+.pytest_cache/
+.run-logs/
+*.pyc
+node_modules/
+dist/
+.superpowers/
+backend/.coverage
+backend/htmlcov/
+frontend/.vite/
+.env

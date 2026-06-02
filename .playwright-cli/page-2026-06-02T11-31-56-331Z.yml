@@ -1,0 +1,58 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: CS
+      - generic [ref=e7]:
+        - strong [ref=e8]: 中建智慧安全
+        - generic [ref=e9]: Project Safety MVP
+    - navigation [ref=e10]:
+      - link "风险驾驶舱" [ref=e11] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e12]
+        - generic [ref=e17]: 风险驾驶舱
+      - link "项目画像" [ref=e18] [cursor=pointer]:
+        - /url: /profiles/projects
+        - img [ref=e19]
+        - generic [ref=e21]: 项目画像
+      - link "工人画像" [active] [ref=e22] [cursor=pointer]:
+        - /url: /profiles/workers
+        - img [ref=e23]
+        - generic [ref=e28]: 工人画像
+      - link "分包商画像" [ref=e29] [cursor=pointer]:
+        - /url: /profiles/subcontractors
+        - img [ref=e30]
+        - generic [ref=e35]: 分包商画像
+      - link "工单闭环" [ref=e36] [cursor=pointer]:
+        - /url: /work-orders
+        - img [ref=e37]
+        - generic [ref=e40]: 工单闭环
+      - link "安全助手" [ref=e41] [cursor=pointer]:
+        - /url: /assistant
+        - img [ref=e42]
+        - generic [ref=e45]: 安全助手
+  - main [ref=e46]:
+    - generic [ref=e47]:
+      - generic [ref=e48]:
+        - text: 集团级试点
+        - heading "项目工地智慧安全平台" [level=1] [ref=e49]
+      - generic [ref=e50]:
+        - generic [ref=e51]: MySQL 主库
+        - generic [ref=e52]: 强规则优先
+        - generic [ref=e53]: Qwen-plus
+    - generic [ref=e131]:
+      - generic [ref=e132]:
+        - generic [ref=e133]:
+          - paragraph [ref=e134]: Profile / Worker
+          - heading "工人安全风险画像" [level=2] [ref=e135]
+        - generic [ref=e136]: 高风险
+      - generic [ref=e137]:
+        - generic [ref=e138]:
+          - strong [ref=e139]: "61"
+          - generic [ref=e140]: W002 仅展示脱敏画像摘要
+        - generic [ref=e142]: 证书过期
+      - generic [ref=e143]:
+        - heading "适用边界" [level=3] [ref=e144]
+        - paragraph [ref=e145]: 画像用于培训、提醒和作业适配，不作为处罚、清退或岗位调整的唯一依据。
+      - generic [ref=e146]:
+        - heading "证据摘要" [level=3] [ref=e147]
+        - paragraph [ref=e148]: rule:SR-WORKER-001

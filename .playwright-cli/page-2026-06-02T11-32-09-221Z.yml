@@ -1,0 +1,64 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: CS
+      - generic [ref=e7]:
+        - strong [ref=e8]: 中建智慧安全
+        - generic [ref=e9]: Project Safety MVP
+    - navigation [ref=e10]:
+      - link "风险驾驶舱" [ref=e11] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e12]
+        - generic [ref=e17]: 风险驾驶舱
+      - link "项目画像" [ref=e18] [cursor=pointer]:
+        - /url: /profiles/projects
+        - img [ref=e19]
+        - generic [ref=e21]: 项目画像
+      - link "工人画像" [ref=e22] [cursor=pointer]:
+        - /url: /profiles/workers
+        - img [ref=e23]
+        - generic [ref=e28]: 工人画像
+      - link "分包商画像" [ref=e29] [cursor=pointer]:
+        - /url: /profiles/subcontractors
+        - img [ref=e30]
+        - generic [ref=e35]: 分包商画像
+      - link "工单闭环" [active] [ref=e36] [cursor=pointer]:
+        - /url: /work-orders
+        - img [ref=e37]
+        - generic [ref=e40]: 工单闭环
+      - link "安全助手" [ref=e41] [cursor=pointer]:
+        - /url: /assistant
+        - img [ref=e42]
+        - generic [ref=e45]: 安全助手
+  - main [ref=e46]:
+    - generic [ref=e47]:
+      - generic [ref=e48]:
+        - text: 集团级试点
+        - heading "项目工地智慧安全平台" [level=1] [ref=e49]
+      - generic [ref=e50]:
+        - generic [ref=e51]: MySQL 主库
+        - generic [ref=e52]: 强规则优先
+        - generic [ref=e53]: Qwen-plus
+    - generic [ref=e168]:
+      - generic [ref=e170]:
+        - paragraph [ref=e171]: Work Orders
+        - heading "隐患整改工单闭环" [level=2] [ref=e172]
+      - table [ref=e174]:
+        - rowgroup [ref=e175]:
+          - row "工单 项目 来源 状态 责任人 截止" [ref=e176]:
+            - columnheader "工单" [ref=e177]
+            - columnheader "项目" [ref=e178]
+            - columnheader "来源" [ref=e179]
+            - columnheader "状态" [ref=e180]
+            - columnheader "责任人" [ref=e181]
+            - columnheader "截止" [ref=e182]
+        - rowgroup [ref=e183]:
+          - row "督办外脚手架重大隐患整改WO-001 P001 hazard / H001 pending_confirm 项目安全员 2026-06-03" [ref=e184]:
+            - cell "督办外脚手架重大隐患整改WO-001" [ref=e185]:
+              - strong [ref=e186]: 督办外脚手架重大隐患整改
+              - text: WO-001
+            - cell "P001" [ref=e187]
+            - cell "hazard / H001" [ref=e188]
+            - cell "pending_confirm" [ref=e189]
+            - cell "项目安全员" [ref=e190]
+            - cell "2026-06-03" [ref=e191]

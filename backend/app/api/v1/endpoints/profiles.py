@@ -1,0 +1,67 @@
+﻿from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.infrastructure.database.session import get_db
+from app.services.profiles.service import (
+    get_project_profile, get_worker_profile, get_subcontractor_profile,
+    get_project_ranking, recalculate_project_profiles,
+)
+from app.core.responses import success
+
+router = APIRouter()
+
+
+@router.get("/project/{project_id}")
+def project_profile(project_id: str, db: Session = Depends(get_db)):
+    try:
+        data = get_project_profile(db, project_id)
+        if data is None:
+            raise HTTPException(status_code=404, detail="Project profile not found")
+        return success(data)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+@router.get("/worker/{worker_id}")
+def worker_profile(worker_id: str, db: Session = Depends(get_db)):
+    try:
+        data = get_worker_profile(db, worker_id)
+        if data is None:
+            raise HTTPException(status_code=404, detail="Worker profile not found")
+        return success(data)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+@router.get("/subcontractor/{subcontractor_id}")
+def subcontractor_profile(subcontractor_id: str, db: Session = Depends(get_db)):
+    try:
+        data = get_subcontractor_profile(db, subcontractor_id)
+        if data is None:
+            raise HTTPException(status_code=404, detail="Subcontractor profile not found")
+        return success(data)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+@router.get("/ranking/projects")
+def project_ranking(db: Session = Depends(get_db)):
+    try:
+        data = get_project_ranking(db)
+        return success(data)
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+@router.post("/recalculate")
+def recalculate_profiles(db: Session = Depends(get_db)):
+    try:
+        return success(recalculate_project_profiles(db))
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=503, detail=str(e))

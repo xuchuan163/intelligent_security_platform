@@ -1,0 +1,91 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: CS
+      - generic [ref=e7]:
+        - strong [ref=e8]: 中建智慧安全
+        - generic [ref=e9]: Project Safety MVP
+    - navigation [ref=e10]:
+      - link "风险驾驶舱" [ref=e11] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e12]
+        - generic [ref=e17]: 风险驾驶舱
+      - link "项目画像" [ref=e18] [cursor=pointer]:
+        - /url: /profiles/projects
+        - img [ref=e19]
+        - generic [ref=e21]: 项目画像
+      - link "工人画像" [ref=e22] [cursor=pointer]:
+        - /url: /profiles/workers
+        - img [ref=e23]
+        - generic [ref=e28]: 工人画像
+      - link "分包商画像" [ref=e29] [cursor=pointer]:
+        - /url: /profiles/subcontractors
+        - img [ref=e30]
+        - generic [ref=e35]: 分包商画像
+      - link "工单闭环" [ref=e36] [cursor=pointer]:
+        - /url: /work-orders
+        - img [ref=e37]
+        - generic [ref=e40]: 工单闭环
+      - link "安全助手" [ref=e41] [cursor=pointer]:
+        - /url: /assistant
+        - img [ref=e42]
+        - generic [ref=e45]: 安全助手
+  - main [ref=e46]:
+    - generic [ref=e47]:
+      - generic [ref=e48]:
+        - text: 集团级试点
+        - heading "项目工地智慧安全平台" [level=1] [ref=e49]
+      - generic [ref=e50]:
+        - generic [ref=e51]: MySQL 主库
+        - generic [ref=e52]: 强规则优先
+        - generic [ref=e53]: Qwen-plus
+    - generic [ref=e54]:
+      - generic [ref=e56]:
+        - paragraph [ref=e57]: Dashboard / 演示数据
+        - heading "安全风险驾驶舱" [level=2] [ref=e58]
+      - generic [ref=e59]:
+        - generic [ref=e60]:
+          - paragraph [ref=e61]: 在建项目
+          - strong [ref=e62]: "3"
+        - generic [ref=e63]:
+          - paragraph [ref=e64]: 高风险项目
+          - strong [ref=e65]: "1"
+        - generic [ref=e66]:
+          - paragraph [ref=e67]: 打开工单
+          - strong [ref=e68]: "4"
+        - generic [ref=e69]:
+          - paragraph [ref=e70]: 超期升级
+          - strong [ref=e71]: "1"
+      - generic [ref=e73]:
+        - heading "项目风险排名" [level=3] [ref=e74]
+        - generic [ref=e75]: 风险分越高，督办优先级越高
+      - generic [ref=e79]:
+        - heading "重点项目" [level=3] [ref=e81]
+        - generic [ref=e82]:
+          - generic [ref=e83]:
+            - generic [ref=e84]:
+              - strong [ref=e85]: 上海临港智慧建造项目
+              - generic [ref=e86]: P001
+            - generic [ref=e87]: 高风险
+          - generic [ref=e88]:
+            - generic [ref=e89]:
+              - strong [ref=e90]: 苏州轨交配套项目
+              - generic [ref=e91]: P002
+            - generic [ref=e92]: 中风险
+          - generic [ref=e93]:
+            - generic [ref=e94]:
+              - strong [ref=e95]: 杭州未来社区项目
+              - generic [ref=e96]: P003
+            - generic [ref=e97]: 低风险
+      - generic [ref=e98]:
+        - heading "工单状态" [level=3] [ref=e100]
+        - generic [ref=e101]:
+          - generic [ref=e102]:
+            - strong [ref=e103]: pending_confirm
+            - generic [ref=e104]: "1"
+          - generic [ref=e105]:
+            - strong [ref=e106]: processing
+            - generic [ref=e107]: "2"
+          - generic [ref=e108]:
+            - strong [ref=e109]: waiting_review
+            - generic [ref=e110]: "1"

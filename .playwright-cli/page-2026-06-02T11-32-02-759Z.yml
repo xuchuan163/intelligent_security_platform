@@ -1,0 +1,60 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: CS
+      - generic [ref=e7]:
+        - strong [ref=e8]: 中建智慧安全
+        - generic [ref=e9]: Project Safety MVP
+    - navigation [ref=e10]:
+      - link "风险驾驶舱" [ref=e11] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e12]
+        - generic [ref=e17]: 风险驾驶舱
+      - link "项目画像" [ref=e18] [cursor=pointer]:
+        - /url: /profiles/projects
+        - img [ref=e19]
+        - generic [ref=e21]: 项目画像
+      - link "工人画像" [ref=e22] [cursor=pointer]:
+        - /url: /profiles/workers
+        - img [ref=e23]
+        - generic [ref=e28]: 工人画像
+      - link "分包商画像" [active] [ref=e29] [cursor=pointer]:
+        - /url: /profiles/subcontractors
+        - img [ref=e30]
+        - generic [ref=e35]: 分包商画像
+      - link "工单闭环" [ref=e36] [cursor=pointer]:
+        - /url: /work-orders
+        - img [ref=e37]
+        - generic [ref=e40]: 工单闭环
+      - link "安全助手" [ref=e41] [cursor=pointer]:
+        - /url: /assistant
+        - img [ref=e42]
+        - generic [ref=e45]: 安全助手
+  - main [ref=e46]:
+    - generic [ref=e47]:
+      - generic [ref=e48]:
+        - text: 集团级试点
+        - heading "项目工地智慧安全平台" [level=1] [ref=e49]
+      - generic [ref=e50]:
+        - generic [ref=e51]: MySQL 主库
+        - generic [ref=e52]: 强规则优先
+        - generic [ref=e53]: Qwen-plus
+    - generic [ref=e149]:
+      - generic [ref=e150]:
+        - generic [ref=e151]:
+          - paragraph [ref=e152]: Profile / Subcontractor
+          - heading "分包商安全履约画像" [level=2] [ref=e153]
+        - generic [ref=e154]: 中风险
+      - generic [ref=e155]:
+        - generic [ref=e156]:
+          - strong [ref=e157]: "33"
+          - generic [ref=e158]: S001 跨项目履约风险摘要
+        - generic [ref=e159]:
+          - generic [ref=e160]: 高风险工人占比较高
+          - generic [ref=e161]: 隐患整改超期
+      - generic [ref=e162]:
+        - heading "建议动作" [level=3] [ref=e163]
+        - paragraph [ref=e164]: 对超期整改和高风险班组开展专项约谈，跟踪复查完成率。
+      - generic [ref=e165]:
+        - heading "证据摘要" [level=3] [ref=e166]
+        - paragraph [ref=e167]: metric:SUB_OVERDUE_RECT_RATE
