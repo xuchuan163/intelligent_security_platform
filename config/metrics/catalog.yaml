@@ -1,0 +1,2382 @@
+metrics:
+- metric_code: PROJECT_RISK_SCORE
+  metric_name: 项目风险分
+  business_definition: 项目基础风险分乘以动态修正系数后叠加强规则触发分。
+  calculation_formula: base_score * dynamic_factor + rule_bonus
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  - project_id
+  - calc_date
+  source_tables:
+  - project_risk_profile
+  source_fields:
+  - total_risk_score
+  - risk_level
+  - strong_rule_flags
+  filters:
+    status: active
+  permission_level: project
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 项目风险分
+  - 项目风险
+  - 风险分
+- metric_code: PROJECT_HIGH_RISK_COUNT
+  metric_name: 高风险项目数
+  business_definition: 当前风险等级为 high 或 critical 的项目数量。
+  calculation_formula: count(project_id where risk_level in high,critical)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  - calc_date
+  source_tables:
+  - project_risk_profile
+  source_fields:
+  - project_id
+  - risk_level
+  filters:
+    risk_level:
+    - high
+    - critical
+  permission_level: tenant
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 高风险项目数
+  - project_high_risk_count
+- metric_code: PROJECT_CRITICAL_RISK_COUNT
+  metric_name: 极高风险项目数
+  business_definition: 当前风险等级为 critical 的项目数量。
+  calculation_formula: count(project_id where risk_level = critical)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  - calc_date
+  source_tables:
+  - project_risk_profile
+  source_fields:
+  - project_id
+  - risk_level
+  filters:
+    risk_level: critical
+  permission_level: tenant
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 极高风险项目数
+  - project_critical_risk_count
+- metric_code: PROJECT_HAZARD_OVERDUE_RATE
+  metric_name: 隐患整改超期率
+  business_definition: 超期未关闭隐患数占应整改隐患数的比例。
+  calculation_formula: overdue_open_hazards / total_open_or_due_hazards
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - subcontractor_id
+  source_tables:
+  - hazard
+  source_fields:
+  - due_date
+  - status
+  - close_date
+  filters:
+    status_not: closed
+  permission_level: project
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 隐患整改超期率
+  - project_hazard_overdue_rate
+- metric_code: PROJECT_MAJOR_HAZARD_COUNT
+  metric_name: 重大隐患数量
+  business_definition: 统计周期内项目重大隐患数量。
+  calculation_formula: count(hazard_id where is_major = true)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  source_tables:
+  - hazard
+  source_fields:
+  - hazard_id
+  - is_major
+  filters:
+    is_major: true
+  permission_level: project
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 重大隐患数量
+  - project_major_hazard_count
+- metric_code: PROJECT_MAJOR_HAZARD_OVERDUE_COUNT
+  metric_name: 重大隐患超期未闭环数
+  business_definition: 到期后仍未关闭的重大隐患数量。
+  calculation_formula: count(hazard_id where is_major = true and due_date < today
+    and status != closed)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  source_tables:
+  - hazard
+  source_fields:
+  - hazard_id
+  - is_major
+  - due_date
+  - status
+  filters:
+    is_major: true
+    status_not: closed
+  permission_level: project
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 重大隐患超期未闭环数
+  - project_major_hazard_overdue_count
+- metric_code: PROJECT_OPEN_HAZARD_COUNT
+  metric_name: 未闭环隐患数
+  business_definition: 当前未关闭隐患数量。
+  calculation_formula: count(hazard_id where status != closed)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - subcontractor_id
+  source_tables:
+  - hazard
+  source_fields:
+  - hazard_id
+  - status
+  filters:
+    status_not: closed
+  permission_level: project
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 未闭环隐患数
+  - project_open_hazard_count
+- metric_code: HAZARD_RECTIFICATION_CLOSE_RATE
+  metric_name: 隐患整改闭环率
+  business_definition: 已关闭隐患数占隐患总数的比例。
+  calculation_formula: closed_hazards / total_hazards
+  statistical_period: monthly
+  dimensions:
+  - tenant_id
+  - project_id
+  - subcontractor_id
+  source_tables:
+  - hazard
+  source_fields:
+  - hazard_id
+  - status
+  filters: {}
+  permission_level: project
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 隐患整改闭环率
+  - hazard_rectification_close_rate
+- metric_code: EQUIPMENT_OVERDUE_RATE
+  metric_name: 设备超期未检率
+  business_definition: 超期未检在用设备数占在用设备数的比例。
+  calculation_formula: overdue_in_use_equipment / in_use_equipment
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - equipment_type
+  source_tables:
+  - equipment
+  source_fields:
+  - inspection_due_date
+  - use_status
+  filters:
+    use_status: in_use
+  permission_level: project
+  owner_department: 设备部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 设备超期未检率
+  - equipment_overdue_rate
+- metric_code: SPECIAL_EQUIPMENT_OVERDUE_COUNT
+  metric_name: 特种设备超期未检数
+  business_definition: 在用且检验日期已超期的特种设备数量。
+  calculation_formula: count(equipment_id where is_special = true and inspection_due_date
+    < today and use_status = in_use)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - equipment_type
+  source_tables:
+  - equipment
+  source_fields:
+  - equipment_id
+  - is_special
+  - inspection_due_date
+  - use_status
+  filters:
+    is_special: true
+    use_status: in_use
+  permission_level: project
+  owner_department: 设备部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 特种设备超期未检数
+  - special_equipment_overdue_count
+- metric_code: EQUIPMENT_IN_USE_COUNT
+  metric_name: 在用设备数量
+  business_definition: 当前处于在用状态的设备数量。
+  calculation_formula: count(equipment_id where use_status = in_use)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - equipment_type
+  source_tables:
+  - equipment
+  source_fields:
+  - equipment_id
+  - use_status
+  filters:
+    use_status: in_use
+  permission_level: project
+  owner_department: 设备部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 在用设备数量
+  - equipment_in_use_count
+- metric_code: WORKER_HIGH_RISK_RATIO
+  metric_name: 高风险工人占比
+  business_definition: 高风险或极高风险工人占在场工人的比例。
+  calculation_formula: high_risk_workers / active_workers
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - subcontractor_id
+  source_tables:
+  - worker
+  - worker_risk_profile
+  source_fields:
+  - worker_id
+  - risk_level
+  - status
+  filters:
+    risk_level:
+    - high
+    - critical
+    status: active
+  permission_level: project
+  owner_department: 劳务管理部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 高风险工人占比
+  - 高风险工人比例
+- metric_code: WORKER_CERT_ABNORMAL_COUNT
+  metric_name: 作业证异常工人数
+  business_definition: 特种作业证过期或缺失的工人数量。
+  calculation_formula: count(worker_id where special_cert_status in expired,missing)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - subcontractor_id
+  - work_type
+  source_tables:
+  - worker
+  source_fields:
+  - worker_id
+  - special_cert_status
+  filters:
+    special_cert_status:
+    - expired
+    - missing
+  permission_level: project
+  owner_department: 劳务管理部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 作业证异常工人数
+  - worker_cert_abnormal_count
+- metric_code: WORKER_VIOLATION_30D_COUNT
+  metric_name: 近30天工人违规次数
+  business_definition: 工人近30天累计违规次数。
+  calculation_formula: sum(violation_count_30d)
+  statistical_period: 30d
+  dimensions:
+  - tenant_id
+  - project_id
+  - subcontractor_id
+  source_tables:
+  - worker
+  source_fields:
+  - violation_count_30d
+  filters:
+    status: active
+  permission_level: project
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 近30天工人违规次数
+  - worker_violation_30d_count
+- metric_code: WORKER_FREQUENT_VIOLATION_COUNT
+  metric_name: 频繁违规工人数
+  business_definition: 近30天违规次数大于等于3的工人数量。
+  calculation_formula: count(worker_id where violation_count_30d >= 3)
+  statistical_period: 30d
+  dimensions:
+  - tenant_id
+  - project_id
+  - subcontractor_id
+  source_tables:
+  - worker
+  source_fields:
+  - worker_id
+  - violation_count_30d
+  filters:
+    violation_count_30d_gte: 3
+  permission_level: project
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 频繁违规工人数
+  - worker_frequent_violation_count
+- metric_code: TRAINING_PASS_RATE
+  metric_name: 培训合格率
+  business_definition: 安全培训考核合格工人数占应培训人数比例。
+  calculation_formula: count(worker_id where exam_score >= 60) / active_workers
+  statistical_period: monthly
+  dimensions:
+  - tenant_id
+  - project_id
+  - subcontractor_id
+  source_tables:
+  - worker
+  source_fields:
+  - worker_id
+  - exam_score
+  - status
+  filters:
+    status: active
+  permission_level: project
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 培训合格率
+  - training_pass_rate
+- metric_code: WORKER_HEALTH_EXPIRED_COUNT
+  metric_name: 体检过期工人数
+  business_definition: 体检状态为过期的在场工人数量。
+  calculation_formula: count(worker_id where health_check_status = expired)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - subcontractor_id
+  source_tables:
+  - worker
+  source_fields:
+  - worker_id
+  - health_check_status
+  filters:
+    health_check_status: expired
+  permission_level: project
+  owner_department: 劳务管理部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 体检过期工人数
+  - worker_health_expired_count
+- metric_code: NEW_WORKER_OBSERVATION_COUNT
+  metric_name: 新进场观察期工人数
+  business_definition: 入场天数小于7天的工人数量。
+  calculation_formula: count(worker_id where entry_days < 7)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - subcontractor_id
+  source_tables:
+  - worker
+  source_fields:
+  - worker_id
+  - entry_days
+  filters:
+    entry_days_lt: 7
+  permission_level: project
+  owner_department: 劳务管理部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 新进场观察期工人数
+  - new_worker_observation_count
+- metric_code: SUB_RISK_SCORE
+  metric_name: 分包商风险分
+  business_definition: 分包商画像总风险分。
+  calculation_formula: subcontractor total_risk_score
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - subcontractor_id
+  source_tables:
+  - subcontractor_risk_profile
+  source_fields:
+  - total_risk_score
+  - risk_level
+  filters: {}
+  permission_level: project
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 分包商风险分
+  - sub_risk_score
+- metric_code: SUB_OVERDUE_RECT_RATE
+  metric_name: 分包商整改超期率
+  business_definition: 分包商责任超期隐患占分包商责任隐患的比例。
+  calculation_formula: overdue_rectification_ratio
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - subcontractor_id
+  source_tables:
+  - subcontractor_risk_profile
+  source_fields:
+  - overdue_rectification_ratio
+  filters: {}
+  permission_level: project
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 分包整改超期率
+  - 分包商超期整改率
+- metric_code: SUB_HIGH_RISK_WORKER_RATIO
+  metric_name: 分包商高风险工人占比
+  business_definition: 分包商高风险工人占其在场工人的比例。
+  calculation_formula: high_risk_worker_ratio
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - subcontractor_id
+  source_tables:
+  - subcontractor_risk_profile
+  source_fields:
+  - high_risk_worker_ratio
+  filters: {}
+  permission_level: project
+  owner_department: 劳务管理部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 分包商高风险工人占比
+  - sub_high_risk_worker_ratio
+- metric_code: SUB_LICENSE_ABNORMAL_COUNT
+  metric_name: 证照异常分包商数
+  business_definition: 安全许可证失效或异常的分包商数量。
+  calculation_formula: count(subcontractor_id where safety_license_status != valid)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - subcontractor
+  source_fields:
+  - subcontractor_id
+  - safety_license_status
+  filters:
+    safety_license_status_not: valid
+  permission_level: tenant
+  owner_department: 商务管理部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 证照异常分包商数
+  - sub_license_abnormal_count
+- metric_code: SUB_ACCIDENT_HISTORY_COUNT
+  metric_name: 分包商历史事故数
+  business_definition: 分包商历史事故次数累计。
+  calculation_formula: sum(accident_history_count)
+  statistical_period: yearly
+  dimensions:
+  - tenant_id
+  - subcontractor_id
+  source_tables:
+  - subcontractor
+  source_fields:
+  - accident_history_count
+  filters: {}
+  permission_level: tenant
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 分包商历史事故数
+  - sub_accident_history_count
+- metric_code: WORK_ORDER_OPEN_COUNT
+  metric_name: 未闭环工单数
+  business_definition: 当前未关闭安全工单数量。
+  calculation_formula: count(work_order_id where status != closed)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - work_order_type
+  - status
+  source_tables:
+  - safety_work_order
+  source_fields:
+  - work_order_id
+  - status
+  filters:
+    status_not: closed
+  permission_level: project
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 未闭环工单数
+  - work_order_open_count
+- metric_code: WORK_ORDER_CLOSED_COUNT
+  metric_name: 已闭环工单数
+  business_definition: 当前已关闭安全工单数量。
+  calculation_formula: count(work_order_id where status = closed)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - work_order_type
+  source_tables:
+  - safety_work_order
+  source_fields:
+  - work_order_id
+  - status
+  filters:
+    status: closed
+  permission_level: project
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 已闭环工单数
+  - work_order_closed_count
+- metric_code: WORK_ORDER_OVERDUE_ESCALATED_COUNT
+  metric_name: 超期升级工单数
+  business_definition: 当前状态为超期升级的安全工单数量。
+  calculation_formula: count(work_order_id where status = overdue_escalated)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - work_order_type
+  source_tables:
+  - safety_work_order
+  source_fields:
+  - work_order_id
+  - status
+  filters:
+    status: overdue_escalated
+  permission_level: project
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 超期升级工单数
+  - work_order_overdue_escalated_count
+- metric_code: RULE_TRIGGER_COUNT
+  metric_name: 强规则触发次数
+  business_definition: 统计周期内强规则触发记录数量。
+  calculation_formula: count(rule_trigger_log.id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - rule_id
+  - object_type
+  - severity
+  source_tables:
+  - rule_trigger_log
+  source_fields:
+  - rule_id
+  - object_type
+  - severity
+  - created_at
+  filters: {}
+  permission_level: project
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 强规则触发次数
+  - rule_trigger_count
+- metric_code: CRITICAL_RULE_TRIGGER_COUNT
+  metric_name: 高危强规则触发次数
+  business_definition: 严重等级为 high 或 critical 的强规则触发次数。
+  calculation_formula: count(rule_trigger_log.id where severity in high,critical)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - rule_id
+  source_tables:
+  - rule_trigger_log
+  source_fields:
+  - rule_id
+  - severity
+  filters:
+    severity:
+    - high
+    - critical
+  permission_level: project
+  owner_department: 安全部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 高危强规则触发次数
+  - critical_rule_trigger_count
+- metric_code: SCHEDULE_PRESSURE_INDEX
+  metric_name: 工期压力指数
+  business_definition: 根据项目进度压力、夜间施工和交叉作业情况形成的压力指标。
+  calculation_formula: schedule_pressure_index
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - construction_phase
+  source_tables:
+  - project
+  source_fields:
+  - schedule_pressure_index
+  - night_shift_days
+  - cross_operation_count
+  filters:
+    status: active
+  permission_level: project
+  owner_department: 工程管理部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 工期压力指数
+  - schedule_pressure_index
+- metric_code: NIGHT_SHIFT_DAYS
+  metric_name: 夜间施工天数
+  business_definition: 统计周期内项目夜间施工天数。
+  calculation_formula: night_shift_days
+  statistical_period: monthly
+  dimensions:
+  - tenant_id
+  - project_id
+  source_tables:
+  - project
+  source_fields:
+  - night_shift_days
+  filters:
+    status: active
+  permission_level: project
+  owner_department: 工程管理部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 夜间施工天数
+  - night_shift_days
+- metric_code: CROSS_OPERATION_COUNT
+  metric_name: 交叉作业面数量
+  business_definition: 当前项目交叉作业面数量。
+  calculation_formula: cross_operation_count
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - project_id
+  - construction_phase
+  source_tables:
+  - project
+  source_fields:
+  - cross_operation_count
+  filters:
+    status: active
+  permission_level: project
+  owner_department: 工程管理部
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 交叉作业面数量
+  - cross_operation_count
+- metric_code: DATA_COMPLETENESS_AVG
+  metric_name: 画像数据完整度均值
+  business_definition: 项目、工人、分包商画像数据完整度平均值。
+  calculation_formula: avg(data_completeness)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - profile_type
+  source_tables:
+  - project_risk_profile
+  - worker_risk_profile
+  - subcontractor_risk_profile
+  source_fields:
+  - data_completeness
+  filters: {}
+  permission_level: tenant
+  owner_department: 数据治理组
+  metric_version: v1.0
+  status: enabled
+  aliases:
+  - 画像数据完整度均值
+  - data_completeness_avg
+- metric_code: PROJECT_PHASE2_SEMANTIC_001
+  metric_name: Phase 2 Project Governance Semantic Metric 001
+  business_definition: Phase 2 Project Governance Semantic Metric 001, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(project_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - project_risk_profile
+  source_fields:
+  - project_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Project Governance Semantic Metric 001
+  - Project Governance Metric 001
+  - project_phase2_semantic_001
+  permission_level: tenant
+  owner_department: Project Governance
+  metric_version: v1.0
+  status: enabled
+- metric_code: HAZARD_PHASE2_SEMANTIC_002
+  metric_name: Phase 2 Hazard Control Semantic Metric 002
+  business_definition: Phase 2 Hazard Control Semantic Metric 002, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(hazard_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - hazard
+  source_fields:
+  - hazard_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Hazard Control Semantic Metric 002
+  - Hazard Control Metric 002
+  - hazard_phase2_semantic_002
+  permission_level: tenant
+  owner_department: Hazard Control
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORKER_PHASE2_SEMANTIC_003
+  metric_name: Phase 2 Worker Safety Semantic Metric 003
+  business_definition: Phase 2 Worker Safety Semantic Metric 003, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(worker_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - worker
+  source_fields:
+  - worker_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Worker Safety Semantic Metric 003
+  - Worker Safety Metric 003
+  - worker_phase2_semantic_003
+  permission_level: tenant
+  owner_department: Worker Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: SUB_PHASE2_SEMANTIC_004
+  metric_name: Phase 2 Subcontractor Management Semantic Metric 004
+  business_definition: Phase 2 Subcontractor Management Semantic Metric 004, used
+    for Phase 2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(subcontractor_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - subcontractor
+  source_fields:
+  - subcontractor_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Subcontractor Management Semantic Metric 004
+  - Subcontractor Management Metric 004
+  - sub_phase2_semantic_004
+  permission_level: tenant
+  owner_department: Subcontractor Management
+  metric_version: v1.0
+  status: enabled
+- metric_code: EQUIPMENT_PHASE2_SEMANTIC_005
+  metric_name: Phase 2 Equipment Safety Semantic Metric 005
+  business_definition: Phase 2 Equipment Safety Semantic Metric 005, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(equipment_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - equipment
+  source_fields:
+  - equipment_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Equipment Safety Semantic Metric 005
+  - Equipment Safety Metric 005
+  - equipment_phase2_semantic_005
+  permission_level: tenant
+  owner_department: Equipment Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORK_ORDER_PHASE2_SEMANTIC_006
+  metric_name: Phase 2 Work Order Closure Semantic Metric 006
+  business_definition: Phase 2 Work Order Closure Semantic Metric 006, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(work_order_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - safety_work_order
+  source_fields:
+  - work_order_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Work Order Closure Semantic Metric 006
+  - Work Order Closure Metric 006
+  - work_order_phase2_semantic_006
+  permission_level: tenant
+  owner_department: Work Order Closure
+  metric_version: v1.0
+  status: enabled
+- metric_code: RULE_PHASE2_SEMANTIC_007
+  metric_name: Phase 2 Rule Trigger Semantic Metric 007
+  business_definition: Phase 2 Rule Trigger Semantic Metric 007, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(rule_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - rule_trigger_log
+  source_fields:
+  - rule_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Rule Trigger Semantic Metric 007
+  - Rule Trigger Metric 007
+  - rule_phase2_semantic_007
+  permission_level: tenant
+  owner_department: Rule Trigger
+  metric_version: v1.0
+  status: enabled
+- metric_code: PROJECT_PHASE2_SEMANTIC_008
+  metric_name: Phase 2 Project Governance Semantic Metric 008
+  business_definition: Phase 2 Project Governance Semantic Metric 008, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(project_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - project_risk_profile
+  source_fields:
+  - project_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Project Governance Semantic Metric 008
+  - Project Governance Metric 008
+  - project_phase2_semantic_008
+  permission_level: tenant
+  owner_department: Project Governance
+  metric_version: v1.0
+  status: enabled
+- metric_code: HAZARD_PHASE2_SEMANTIC_009
+  metric_name: Phase 2 Hazard Control Semantic Metric 009
+  business_definition: Phase 2 Hazard Control Semantic Metric 009, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(hazard_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - hazard
+  source_fields:
+  - hazard_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Hazard Control Semantic Metric 009
+  - Hazard Control Metric 009
+  - hazard_phase2_semantic_009
+  permission_level: tenant
+  owner_department: Hazard Control
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORKER_PHASE2_SEMANTIC_010
+  metric_name: Phase 2 Worker Safety Semantic Metric 010
+  business_definition: Phase 2 Worker Safety Semantic Metric 010, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(worker_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - worker
+  source_fields:
+  - worker_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Worker Safety Semantic Metric 010
+  - Worker Safety Metric 010
+  - worker_phase2_semantic_010
+  permission_level: tenant
+  owner_department: Worker Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: SUB_PHASE2_SEMANTIC_011
+  metric_name: Phase 2 Subcontractor Management Semantic Metric 011
+  business_definition: Phase 2 Subcontractor Management Semantic Metric 011, used
+    for Phase 2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(subcontractor_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - subcontractor
+  source_fields:
+  - subcontractor_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Subcontractor Management Semantic Metric 011
+  - Subcontractor Management Metric 011
+  - sub_phase2_semantic_011
+  permission_level: tenant
+  owner_department: Subcontractor Management
+  metric_version: v1.0
+  status: enabled
+- metric_code: EQUIPMENT_PHASE2_SEMANTIC_012
+  metric_name: Phase 2 Equipment Safety Semantic Metric 012
+  business_definition: Phase 2 Equipment Safety Semantic Metric 012, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(equipment_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - equipment
+  source_fields:
+  - equipment_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Equipment Safety Semantic Metric 012
+  - Equipment Safety Metric 012
+  - equipment_phase2_semantic_012
+  permission_level: tenant
+  owner_department: Equipment Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORK_ORDER_PHASE2_SEMANTIC_013
+  metric_name: Phase 2 Work Order Closure Semantic Metric 013
+  business_definition: Phase 2 Work Order Closure Semantic Metric 013, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(work_order_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - safety_work_order
+  source_fields:
+  - work_order_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Work Order Closure Semantic Metric 013
+  - Work Order Closure Metric 013
+  - work_order_phase2_semantic_013
+  permission_level: tenant
+  owner_department: Work Order Closure
+  metric_version: v1.0
+  status: enabled
+- metric_code: RULE_PHASE2_SEMANTIC_014
+  metric_name: Phase 2 Rule Trigger Semantic Metric 014
+  business_definition: Phase 2 Rule Trigger Semantic Metric 014, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(rule_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - rule_trigger_log
+  source_fields:
+  - rule_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Rule Trigger Semantic Metric 014
+  - Rule Trigger Metric 014
+  - rule_phase2_semantic_014
+  permission_level: tenant
+  owner_department: Rule Trigger
+  metric_version: v1.0
+  status: enabled
+- metric_code: PROJECT_PHASE2_SEMANTIC_015
+  metric_name: Phase 2 Project Governance Semantic Metric 015
+  business_definition: Phase 2 Project Governance Semantic Metric 015, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(project_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - project_risk_profile
+  source_fields:
+  - project_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Project Governance Semantic Metric 015
+  - Project Governance Metric 015
+  - project_phase2_semantic_015
+  permission_level: tenant
+  owner_department: Project Governance
+  metric_version: v1.0
+  status: enabled
+- metric_code: HAZARD_PHASE2_SEMANTIC_016
+  metric_name: Phase 2 Hazard Control Semantic Metric 016
+  business_definition: Phase 2 Hazard Control Semantic Metric 016, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(hazard_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - hazard
+  source_fields:
+  - hazard_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Hazard Control Semantic Metric 016
+  - Hazard Control Metric 016
+  - hazard_phase2_semantic_016
+  permission_level: tenant
+  owner_department: Hazard Control
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORKER_PHASE2_SEMANTIC_017
+  metric_name: Phase 2 Worker Safety Semantic Metric 017
+  business_definition: Phase 2 Worker Safety Semantic Metric 017, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(worker_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - worker
+  source_fields:
+  - worker_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Worker Safety Semantic Metric 017
+  - Worker Safety Metric 017
+  - worker_phase2_semantic_017
+  permission_level: tenant
+  owner_department: Worker Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: SUB_PHASE2_SEMANTIC_018
+  metric_name: Phase 2 Subcontractor Management Semantic Metric 018
+  business_definition: Phase 2 Subcontractor Management Semantic Metric 018, used
+    for Phase 2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(subcontractor_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - subcontractor
+  source_fields:
+  - subcontractor_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Subcontractor Management Semantic Metric 018
+  - Subcontractor Management Metric 018
+  - sub_phase2_semantic_018
+  permission_level: tenant
+  owner_department: Subcontractor Management
+  metric_version: v1.0
+  status: enabled
+- metric_code: EQUIPMENT_PHASE2_SEMANTIC_019
+  metric_name: Phase 2 Equipment Safety Semantic Metric 019
+  business_definition: Phase 2 Equipment Safety Semantic Metric 019, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(equipment_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - equipment
+  source_fields:
+  - equipment_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Equipment Safety Semantic Metric 019
+  - Equipment Safety Metric 019
+  - equipment_phase2_semantic_019
+  permission_level: tenant
+  owner_department: Equipment Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORK_ORDER_PHASE2_SEMANTIC_020
+  metric_name: Phase 2 Work Order Closure Semantic Metric 020
+  business_definition: Phase 2 Work Order Closure Semantic Metric 020, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(work_order_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - safety_work_order
+  source_fields:
+  - work_order_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Work Order Closure Semantic Metric 020
+  - Work Order Closure Metric 020
+  - work_order_phase2_semantic_020
+  permission_level: tenant
+  owner_department: Work Order Closure
+  metric_version: v1.0
+  status: enabled
+- metric_code: RULE_PHASE2_SEMANTIC_021
+  metric_name: Phase 2 Rule Trigger Semantic Metric 021
+  business_definition: Phase 2 Rule Trigger Semantic Metric 021, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(rule_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - rule_trigger_log
+  source_fields:
+  - rule_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Rule Trigger Semantic Metric 021
+  - Rule Trigger Metric 021
+  - rule_phase2_semantic_021
+  permission_level: tenant
+  owner_department: Rule Trigger
+  metric_version: v1.0
+  status: enabled
+- metric_code: PROJECT_PHASE2_SEMANTIC_022
+  metric_name: Phase 2 Project Governance Semantic Metric 022
+  business_definition: Phase 2 Project Governance Semantic Metric 022, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(project_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - project_risk_profile
+  source_fields:
+  - project_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Project Governance Semantic Metric 022
+  - Project Governance Metric 022
+  - project_phase2_semantic_022
+  permission_level: tenant
+  owner_department: Project Governance
+  metric_version: v1.0
+  status: enabled
+- metric_code: HAZARD_PHASE2_SEMANTIC_023
+  metric_name: Phase 2 Hazard Control Semantic Metric 023
+  business_definition: Phase 2 Hazard Control Semantic Metric 023, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(hazard_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - hazard
+  source_fields:
+  - hazard_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Hazard Control Semantic Metric 023
+  - Hazard Control Metric 023
+  - hazard_phase2_semantic_023
+  permission_level: tenant
+  owner_department: Hazard Control
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORKER_PHASE2_SEMANTIC_024
+  metric_name: Phase 2 Worker Safety Semantic Metric 024
+  business_definition: Phase 2 Worker Safety Semantic Metric 024, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(worker_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - worker
+  source_fields:
+  - worker_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Worker Safety Semantic Metric 024
+  - Worker Safety Metric 024
+  - worker_phase2_semantic_024
+  permission_level: tenant
+  owner_department: Worker Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: SUB_PHASE2_SEMANTIC_025
+  metric_name: Phase 2 Subcontractor Management Semantic Metric 025
+  business_definition: Phase 2 Subcontractor Management Semantic Metric 025, used
+    for Phase 2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(subcontractor_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - subcontractor
+  source_fields:
+  - subcontractor_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Subcontractor Management Semantic Metric 025
+  - Subcontractor Management Metric 025
+  - sub_phase2_semantic_025
+  permission_level: tenant
+  owner_department: Subcontractor Management
+  metric_version: v1.0
+  status: enabled
+- metric_code: EQUIPMENT_PHASE2_SEMANTIC_026
+  metric_name: Phase 2 Equipment Safety Semantic Metric 026
+  business_definition: Phase 2 Equipment Safety Semantic Metric 026, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(equipment_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - equipment
+  source_fields:
+  - equipment_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Equipment Safety Semantic Metric 026
+  - Equipment Safety Metric 026
+  - equipment_phase2_semantic_026
+  permission_level: tenant
+  owner_department: Equipment Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORK_ORDER_PHASE2_SEMANTIC_027
+  metric_name: Phase 2 Work Order Closure Semantic Metric 027
+  business_definition: Phase 2 Work Order Closure Semantic Metric 027, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(work_order_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - safety_work_order
+  source_fields:
+  - work_order_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Work Order Closure Semantic Metric 027
+  - Work Order Closure Metric 027
+  - work_order_phase2_semantic_027
+  permission_level: tenant
+  owner_department: Work Order Closure
+  metric_version: v1.0
+  status: enabled
+- metric_code: RULE_PHASE2_SEMANTIC_028
+  metric_name: Phase 2 Rule Trigger Semantic Metric 028
+  business_definition: Phase 2 Rule Trigger Semantic Metric 028, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(rule_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - rule_trigger_log
+  source_fields:
+  - rule_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Rule Trigger Semantic Metric 028
+  - Rule Trigger Metric 028
+  - rule_phase2_semantic_028
+  permission_level: tenant
+  owner_department: Rule Trigger
+  metric_version: v1.0
+  status: enabled
+- metric_code: PROJECT_PHASE2_SEMANTIC_029
+  metric_name: Phase 2 Project Governance Semantic Metric 029
+  business_definition: Phase 2 Project Governance Semantic Metric 029, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(project_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - project_risk_profile
+  source_fields:
+  - project_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Project Governance Semantic Metric 029
+  - Project Governance Metric 029
+  - project_phase2_semantic_029
+  permission_level: tenant
+  owner_department: Project Governance
+  metric_version: v1.0
+  status: enabled
+- metric_code: HAZARD_PHASE2_SEMANTIC_030
+  metric_name: Phase 2 Hazard Control Semantic Metric 030
+  business_definition: Phase 2 Hazard Control Semantic Metric 030, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(hazard_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - hazard
+  source_fields:
+  - hazard_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Hazard Control Semantic Metric 030
+  - Hazard Control Metric 030
+  - hazard_phase2_semantic_030
+  permission_level: tenant
+  owner_department: Hazard Control
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORKER_PHASE2_SEMANTIC_031
+  metric_name: Phase 2 Worker Safety Semantic Metric 031
+  business_definition: Phase 2 Worker Safety Semantic Metric 031, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(worker_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - worker
+  source_fields:
+  - worker_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Worker Safety Semantic Metric 031
+  - Worker Safety Metric 031
+  - worker_phase2_semantic_031
+  permission_level: tenant
+  owner_department: Worker Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: SUB_PHASE2_SEMANTIC_032
+  metric_name: Phase 2 Subcontractor Management Semantic Metric 032
+  business_definition: Phase 2 Subcontractor Management Semantic Metric 032, used
+    for Phase 2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(subcontractor_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - subcontractor
+  source_fields:
+  - subcontractor_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Subcontractor Management Semantic Metric 032
+  - Subcontractor Management Metric 032
+  - sub_phase2_semantic_032
+  permission_level: tenant
+  owner_department: Subcontractor Management
+  metric_version: v1.0
+  status: enabled
+- metric_code: EQUIPMENT_PHASE2_SEMANTIC_033
+  metric_name: Phase 2 Equipment Safety Semantic Metric 033
+  business_definition: Phase 2 Equipment Safety Semantic Metric 033, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(equipment_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - equipment
+  source_fields:
+  - equipment_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Equipment Safety Semantic Metric 033
+  - Equipment Safety Metric 033
+  - equipment_phase2_semantic_033
+  permission_level: tenant
+  owner_department: Equipment Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORK_ORDER_PHASE2_SEMANTIC_034
+  metric_name: Phase 2 Work Order Closure Semantic Metric 034
+  business_definition: Phase 2 Work Order Closure Semantic Metric 034, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(work_order_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - safety_work_order
+  source_fields:
+  - work_order_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Work Order Closure Semantic Metric 034
+  - Work Order Closure Metric 034
+  - work_order_phase2_semantic_034
+  permission_level: tenant
+  owner_department: Work Order Closure
+  metric_version: v1.0
+  status: enabled
+- metric_code: RULE_PHASE2_SEMANTIC_035
+  metric_name: Phase 2 Rule Trigger Semantic Metric 035
+  business_definition: Phase 2 Rule Trigger Semantic Metric 035, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(rule_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - rule_trigger_log
+  source_fields:
+  - rule_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Rule Trigger Semantic Metric 035
+  - Rule Trigger Metric 035
+  - rule_phase2_semantic_035
+  permission_level: tenant
+  owner_department: Rule Trigger
+  metric_version: v1.0
+  status: enabled
+- metric_code: PROJECT_PHASE2_SEMANTIC_036
+  metric_name: Phase 2 Project Governance Semantic Metric 036
+  business_definition: Phase 2 Project Governance Semantic Metric 036, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(project_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - project_risk_profile
+  source_fields:
+  - project_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Project Governance Semantic Metric 036
+  - Project Governance Metric 036
+  - project_phase2_semantic_036
+  permission_level: tenant
+  owner_department: Project Governance
+  metric_version: v1.0
+  status: enabled
+- metric_code: HAZARD_PHASE2_SEMANTIC_037
+  metric_name: Phase 2 Hazard Control Semantic Metric 037
+  business_definition: Phase 2 Hazard Control Semantic Metric 037, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(hazard_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - hazard
+  source_fields:
+  - hazard_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Hazard Control Semantic Metric 037
+  - Hazard Control Metric 037
+  - hazard_phase2_semantic_037
+  permission_level: tenant
+  owner_department: Hazard Control
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORKER_PHASE2_SEMANTIC_038
+  metric_name: Phase 2 Worker Safety Semantic Metric 038
+  business_definition: Phase 2 Worker Safety Semantic Metric 038, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(worker_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - worker
+  source_fields:
+  - worker_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Worker Safety Semantic Metric 038
+  - Worker Safety Metric 038
+  - worker_phase2_semantic_038
+  permission_level: tenant
+  owner_department: Worker Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: SUB_PHASE2_SEMANTIC_039
+  metric_name: Phase 2 Subcontractor Management Semantic Metric 039
+  business_definition: Phase 2 Subcontractor Management Semantic Metric 039, used
+    for Phase 2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(subcontractor_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - subcontractor
+  source_fields:
+  - subcontractor_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Subcontractor Management Semantic Metric 039
+  - Subcontractor Management Metric 039
+  - sub_phase2_semantic_039
+  permission_level: tenant
+  owner_department: Subcontractor Management
+  metric_version: v1.0
+  status: enabled
+- metric_code: EQUIPMENT_PHASE2_SEMANTIC_040
+  metric_name: Phase 2 Equipment Safety Semantic Metric 040
+  business_definition: Phase 2 Equipment Safety Semantic Metric 040, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(equipment_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - equipment
+  source_fields:
+  - equipment_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Equipment Safety Semantic Metric 040
+  - Equipment Safety Metric 040
+  - equipment_phase2_semantic_040
+  permission_level: tenant
+  owner_department: Equipment Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORK_ORDER_PHASE2_SEMANTIC_041
+  metric_name: Phase 2 Work Order Closure Semantic Metric 041
+  business_definition: Phase 2 Work Order Closure Semantic Metric 041, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(work_order_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - safety_work_order
+  source_fields:
+  - work_order_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Work Order Closure Semantic Metric 041
+  - Work Order Closure Metric 041
+  - work_order_phase2_semantic_041
+  permission_level: tenant
+  owner_department: Work Order Closure
+  metric_version: v1.0
+  status: enabled
+- metric_code: RULE_PHASE2_SEMANTIC_042
+  metric_name: Phase 2 Rule Trigger Semantic Metric 042
+  business_definition: Phase 2 Rule Trigger Semantic Metric 042, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(rule_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - rule_trigger_log
+  source_fields:
+  - rule_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Rule Trigger Semantic Metric 042
+  - Rule Trigger Metric 042
+  - rule_phase2_semantic_042
+  permission_level: tenant
+  owner_department: Rule Trigger
+  metric_version: v1.0
+  status: enabled
+- metric_code: PROJECT_PHASE2_SEMANTIC_043
+  metric_name: Phase 2 Project Governance Semantic Metric 043
+  business_definition: Phase 2 Project Governance Semantic Metric 043, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(project_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - project_risk_profile
+  source_fields:
+  - project_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Project Governance Semantic Metric 043
+  - Project Governance Metric 043
+  - project_phase2_semantic_043
+  permission_level: tenant
+  owner_department: Project Governance
+  metric_version: v1.0
+  status: enabled
+- metric_code: HAZARD_PHASE2_SEMANTIC_044
+  metric_name: Phase 2 Hazard Control Semantic Metric 044
+  business_definition: Phase 2 Hazard Control Semantic Metric 044, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(hazard_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - hazard
+  source_fields:
+  - hazard_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Hazard Control Semantic Metric 044
+  - Hazard Control Metric 044
+  - hazard_phase2_semantic_044
+  permission_level: tenant
+  owner_department: Hazard Control
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORKER_PHASE2_SEMANTIC_045
+  metric_name: Phase 2 Worker Safety Semantic Metric 045
+  business_definition: Phase 2 Worker Safety Semantic Metric 045, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(worker_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - worker
+  source_fields:
+  - worker_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Worker Safety Semantic Metric 045
+  - Worker Safety Metric 045
+  - worker_phase2_semantic_045
+  permission_level: tenant
+  owner_department: Worker Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: SUB_PHASE2_SEMANTIC_046
+  metric_name: Phase 2 Subcontractor Management Semantic Metric 046
+  business_definition: Phase 2 Subcontractor Management Semantic Metric 046, used
+    for Phase 2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(subcontractor_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - subcontractor
+  source_fields:
+  - subcontractor_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Subcontractor Management Semantic Metric 046
+  - Subcontractor Management Metric 046
+  - sub_phase2_semantic_046
+  permission_level: tenant
+  owner_department: Subcontractor Management
+  metric_version: v1.0
+  status: enabled
+- metric_code: EQUIPMENT_PHASE2_SEMANTIC_047
+  metric_name: Phase 2 Equipment Safety Semantic Metric 047
+  business_definition: Phase 2 Equipment Safety Semantic Metric 047, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(equipment_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - equipment
+  source_fields:
+  - equipment_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Equipment Safety Semantic Metric 047
+  - Equipment Safety Metric 047
+  - equipment_phase2_semantic_047
+  permission_level: tenant
+  owner_department: Equipment Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORK_ORDER_PHASE2_SEMANTIC_048
+  metric_name: Phase 2 Work Order Closure Semantic Metric 048
+  business_definition: Phase 2 Work Order Closure Semantic Metric 048, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(work_order_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - safety_work_order
+  source_fields:
+  - work_order_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Work Order Closure Semantic Metric 048
+  - Work Order Closure Metric 048
+  - work_order_phase2_semantic_048
+  permission_level: tenant
+  owner_department: Work Order Closure
+  metric_version: v1.0
+  status: enabled
+- metric_code: RULE_PHASE2_SEMANTIC_049
+  metric_name: Phase 2 Rule Trigger Semantic Metric 049
+  business_definition: Phase 2 Rule Trigger Semantic Metric 049, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(rule_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - rule_trigger_log
+  source_fields:
+  - rule_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Rule Trigger Semantic Metric 049
+  - Rule Trigger Metric 049
+  - rule_phase2_semantic_049
+  permission_level: tenant
+  owner_department: Rule Trigger
+  metric_version: v1.0
+  status: enabled
+- metric_code: PROJECT_PHASE2_SEMANTIC_050
+  metric_name: Phase 2 Project Governance Semantic Metric 050
+  business_definition: Phase 2 Project Governance Semantic Metric 050, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(project_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - project_risk_profile
+  source_fields:
+  - project_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Project Governance Semantic Metric 050
+  - Project Governance Metric 050
+  - project_phase2_semantic_050
+  permission_level: tenant
+  owner_department: Project Governance
+  metric_version: v1.0
+  status: enabled
+- metric_code: HAZARD_PHASE2_SEMANTIC_051
+  metric_name: Phase 2 Hazard Control Semantic Metric 051
+  business_definition: Phase 2 Hazard Control Semantic Metric 051, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(hazard_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - hazard
+  source_fields:
+  - hazard_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Hazard Control Semantic Metric 051
+  - Hazard Control Metric 051
+  - hazard_phase2_semantic_051
+  permission_level: tenant
+  owner_department: Hazard Control
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORKER_PHASE2_SEMANTIC_052
+  metric_name: Phase 2 Worker Safety Semantic Metric 052
+  business_definition: Phase 2 Worker Safety Semantic Metric 052, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(worker_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - worker
+  source_fields:
+  - worker_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Worker Safety Semantic Metric 052
+  - Worker Safety Metric 052
+  - worker_phase2_semantic_052
+  permission_level: tenant
+  owner_department: Worker Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: SUB_PHASE2_SEMANTIC_053
+  metric_name: Phase 2 Subcontractor Management Semantic Metric 053
+  business_definition: Phase 2 Subcontractor Management Semantic Metric 053, used
+    for Phase 2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(subcontractor_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - subcontractor
+  source_fields:
+  - subcontractor_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Subcontractor Management Semantic Metric 053
+  - Subcontractor Management Metric 053
+  - sub_phase2_semantic_053
+  permission_level: tenant
+  owner_department: Subcontractor Management
+  metric_version: v1.0
+  status: enabled
+- metric_code: EQUIPMENT_PHASE2_SEMANTIC_054
+  metric_name: Phase 2 Equipment Safety Semantic Metric 054
+  business_definition: Phase 2 Equipment Safety Semantic Metric 054, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(equipment_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - equipment
+  source_fields:
+  - equipment_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Equipment Safety Semantic Metric 054
+  - Equipment Safety Metric 054
+  - equipment_phase2_semantic_054
+  permission_level: tenant
+  owner_department: Equipment Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORK_ORDER_PHASE2_SEMANTIC_055
+  metric_name: Phase 2 Work Order Closure Semantic Metric 055
+  business_definition: Phase 2 Work Order Closure Semantic Metric 055, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(work_order_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - safety_work_order
+  source_fields:
+  - work_order_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Work Order Closure Semantic Metric 055
+  - Work Order Closure Metric 055
+  - work_order_phase2_semantic_055
+  permission_level: tenant
+  owner_department: Work Order Closure
+  metric_version: v1.0
+  status: enabled
+- metric_code: RULE_PHASE2_SEMANTIC_056
+  metric_name: Phase 2 Rule Trigger Semantic Metric 056
+  business_definition: Phase 2 Rule Trigger Semantic Metric 056, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(rule_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - rule_trigger_log
+  source_fields:
+  - rule_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Rule Trigger Semantic Metric 056
+  - Rule Trigger Metric 056
+  - rule_phase2_semantic_056
+  permission_level: tenant
+  owner_department: Rule Trigger
+  metric_version: v1.0
+  status: enabled
+- metric_code: PROJECT_PHASE2_SEMANTIC_057
+  metric_name: Phase 2 Project Governance Semantic Metric 057
+  business_definition: Phase 2 Project Governance Semantic Metric 057, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(project_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - project_risk_profile
+  source_fields:
+  - project_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Project Governance Semantic Metric 057
+  - Project Governance Metric 057
+  - project_phase2_semantic_057
+  permission_level: tenant
+  owner_department: Project Governance
+  metric_version: v1.0
+  status: enabled
+- metric_code: HAZARD_PHASE2_SEMANTIC_058
+  metric_name: Phase 2 Hazard Control Semantic Metric 058
+  business_definition: Phase 2 Hazard Control Semantic Metric 058, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(hazard_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - hazard
+  source_fields:
+  - hazard_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Hazard Control Semantic Metric 058
+  - Hazard Control Metric 058
+  - hazard_phase2_semantic_058
+  permission_level: tenant
+  owner_department: Hazard Control
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORKER_PHASE2_SEMANTIC_059
+  metric_name: Phase 2 Worker Safety Semantic Metric 059
+  business_definition: Phase 2 Worker Safety Semantic Metric 059, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(worker_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - worker
+  source_fields:
+  - worker_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Worker Safety Semantic Metric 059
+  - Worker Safety Metric 059
+  - worker_phase2_semantic_059
+  permission_level: tenant
+  owner_department: Worker Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: SUB_PHASE2_SEMANTIC_060
+  metric_name: Phase 2 Subcontractor Management Semantic Metric 060
+  business_definition: Phase 2 Subcontractor Management Semantic Metric 060, used
+    for Phase 2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(subcontractor_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - subcontractor
+  source_fields:
+  - subcontractor_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Subcontractor Management Semantic Metric 060
+  - Subcontractor Management Metric 060
+  - sub_phase2_semantic_060
+  permission_level: tenant
+  owner_department: Subcontractor Management
+  metric_version: v1.0
+  status: enabled
+- metric_code: EQUIPMENT_PHASE2_SEMANTIC_061
+  metric_name: Phase 2 Equipment Safety Semantic Metric 061
+  business_definition: Phase 2 Equipment Safety Semantic Metric 061, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(equipment_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - equipment
+  source_fields:
+  - equipment_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Equipment Safety Semantic Metric 061
+  - Equipment Safety Metric 061
+  - equipment_phase2_semantic_061
+  permission_level: tenant
+  owner_department: Equipment Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORK_ORDER_PHASE2_SEMANTIC_062
+  metric_name: Phase 2 Work Order Closure Semantic Metric 062
+  business_definition: Phase 2 Work Order Closure Semantic Metric 062, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(work_order_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - safety_work_order
+  source_fields:
+  - work_order_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Work Order Closure Semantic Metric 062
+  - Work Order Closure Metric 062
+  - work_order_phase2_semantic_062
+  permission_level: tenant
+  owner_department: Work Order Closure
+  metric_version: v1.0
+  status: enabled
+- metric_code: RULE_PHASE2_SEMANTIC_063
+  metric_name: Phase 2 Rule Trigger Semantic Metric 063
+  business_definition: Phase 2 Rule Trigger Semantic Metric 063, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(rule_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - rule_trigger_log
+  source_fields:
+  - rule_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Rule Trigger Semantic Metric 063
+  - Rule Trigger Metric 063
+  - rule_phase2_semantic_063
+  permission_level: tenant
+  owner_department: Rule Trigger
+  metric_version: v1.0
+  status: enabled
+- metric_code: PROJECT_PHASE2_SEMANTIC_064
+  metric_name: Phase 2 Project Governance Semantic Metric 064
+  business_definition: Phase 2 Project Governance Semantic Metric 064, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(project_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - project_risk_profile
+  source_fields:
+  - project_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Project Governance Semantic Metric 064
+  - Project Governance Metric 064
+  - project_phase2_semantic_064
+  permission_level: tenant
+  owner_department: Project Governance
+  metric_version: v1.0
+  status: enabled
+- metric_code: HAZARD_PHASE2_SEMANTIC_065
+  metric_name: Phase 2 Hazard Control Semantic Metric 065
+  business_definition: Phase 2 Hazard Control Semantic Metric 065, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(hazard_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - hazard
+  source_fields:
+  - hazard_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Hazard Control Semantic Metric 065
+  - Hazard Control Metric 065
+  - hazard_phase2_semantic_065
+  permission_level: tenant
+  owner_department: Hazard Control
+  metric_version: v1.0
+  status: enabled
+- metric_code: WORKER_PHASE2_SEMANTIC_066
+  metric_name: Phase 2 Worker Safety Semantic Metric 066
+  business_definition: Phase 2 Worker Safety Semantic Metric 066, used for Phase 2
+    metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(worker_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - worker
+  source_fields:
+  - worker_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Worker Safety Semantic Metric 066
+  - Worker Safety Metric 066
+  - worker_phase2_semantic_066
+  permission_level: tenant
+  owner_department: Worker Safety
+  metric_version: v1.0
+  status: enabled
+- metric_code: SUB_PHASE2_SEMANTIC_067
+  metric_name: Phase 2 Subcontractor Management Semantic Metric 067
+  business_definition: Phase 2 Subcontractor Management Semantic Metric 067, used
+    for Phase 2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(subcontractor_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - subcontractor
+  source_fields:
+  - subcontractor_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Subcontractor Management Semantic Metric 067
+  - Subcontractor Management Metric 067
+  - sub_phase2_semantic_067
+  permission_level: tenant
+  owner_department: Subcontractor Management
+  metric_version: v1.0
+  status: enabled
+- metric_code: EQUIPMENT_PHASE2_SEMANTIC_068
+  metric_name: Phase 2 Equipment Safety Semantic Metric 068
+  business_definition: Phase 2 Equipment Safety Semantic Metric 068, used for Phase
+    2 metric validation, lineage tracing, and alias mapping.
+  calculation_formula: count(equipment_id)
+  statistical_period: daily
+  dimensions:
+  - tenant_id
+  - org_path
+  source_tables:
+  - equipment
+  source_fields:
+  - equipment_id
+  - tenant_id
+  filters:
+    status: active
+  aliases:
+  - Phase 2 Equipment Safety Semantic Metric 068
+  - Equipment Safety Metric 068
+  - equipment_phase2_semantic_068
+  permission_level: tenant
+  owner_department: Equipment Safety
+  metric_version: v1.0
+  status: enabled

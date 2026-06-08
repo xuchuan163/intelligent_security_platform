@@ -1,0 +1,2102 @@
+openapi: 3.1.0
+info:
+  title: 中建智慧安全平台 MVP
+  version: 0.1.0
+paths:
+  /api/v1/auth/me:
+    get:
+      tags:
+      - auth
+      summary: Me
+      operationId: me_api_v1_auth_me_get
+      parameters:
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Me Api V1 Auth Me Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/case/list:
+    get:
+      tags:
+      - cases
+      summary: Case List
+      operationId: case_list_api_v1_case_list_get
+      parameters:
+      - name: page_no
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page No
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      - name: accident_type
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accident Type
+      - name: severity
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Severity
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          default: active
+          title: Status
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Case List Api V1 Case List Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/analysis/attribution:
+    post:
+      tags:
+      - analysis
+      summary: Bayesian Attribution
+      description: |
+        L2 expert-prior attribution by default. When `model_level=auto` and tenant has
+        >=200 active accident cases plus a learned CPT, resolves to L3 with propagation paths.
+        L3 may append low-weight Neo4j neighbor evidence when `NEO4J_ENABLED=true`.
+      operationId: attribution_analysis_api_v1_analysis_attribution_post
+      parameters:
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttributionRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttributionSuccessResponse'
+        '403':
+          description: Forbidden
+        '404':
+          description: Project profile not found
+        '503':
+          description: Bayesian gate not met (insufficient cases or missing CPT)
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/config/bayesian-versions:
+    get:
+      tags:
+      - config
+      summary: Bayesian Model Versions
+      operationId: bayesian_versions_api_v1_config_bayesian_versions_get
+      parameters:
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BayesianVersionsSuccessResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/config/weight-versions:
+    get:
+      tags:
+      - config
+      summary: Weight Config Versions
+      operationId: weight_versions_api_v1_config_weight_versions_get
+      parameters:
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/dashboard/overview:
+    get:
+      tags:
+      - dashboard
+      summary: Dashboard Overview
+      operationId: dashboard_overview_api_v1_dashboard_overview_get
+      parameters:
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/profile/project/{project_id}:
+    get:
+      tags:
+      - profiles
+      summary: Project Profile
+      operationId: project_profile_api_v1_profile_project__project_id__get
+      parameters:
+      - name: project_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Project Id
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/profile/worker/{worker_id}:
+    get:
+      tags:
+      - profiles
+      summary: Worker Profile
+      operationId: worker_profile_api_v1_profile_worker__worker_id__get
+      parameters:
+      - name: worker_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Worker Id
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/profile/subcontractor/{subcontractor_id}:
+    get:
+      tags:
+      - profiles
+      summary: Subcontractor Profile
+      operationId: subcontractor_profile_api_v1_profile_subcontractor__subcontractor_id__get
+      parameters:
+      - name: subcontractor_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Subcontractor Id
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/profile/ranking/projects:
+    get:
+      tags:
+      - profiles
+      summary: Project Ranking
+      operationId: project_ranking_api_v1_profile_ranking_projects_get
+      parameters:
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/profile/recalculate:
+    post:
+      tags:
+      - profiles
+      summary: Recalculate Profiles
+      operationId: recalculate_profiles_api_v1_profile_recalculate_post
+      parameters:
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      requestBody:
+        content:
+          application/json:
+            schema:
+              anyOf:
+              - $ref: '#/components/schemas/ProfileRecalculateRequest'
+              - type: 'null'
+              title: Body
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/rules/triggers:
+    get:
+      tags:
+      - rules
+      summary: Rule Triggers
+      operationId: rule_triggers_api_v1_rules_triggers_get
+      parameters:
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Rule Triggers Api V1 Rules Triggers Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/metrics/catalog:
+    get:
+      tags:
+      - metrics
+      summary: Metric Catalog
+      operationId: metric_catalog_api_v1_metrics_catalog_get
+      parameters:
+      - name: page_no
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page No
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Keyword
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Metric Catalog Api V1 Metrics Catalog Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/metrics/validate:
+    post:
+      tags:
+      - metrics
+      summary: Metric Validate
+      operationId: metric_validate_api_v1_metrics_validate_post
+      parameters:
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetricValidateRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Metric Validate Api V1 Metrics Validate Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/metrics/lineage/{metric_code}:
+    get:
+      tags:
+      - metrics
+      summary: Metric Lineage
+      operationId: metric_lineage_api_v1_metrics_lineage__metric_code__get
+      parameters:
+      - name: metric_code
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Metric Code
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Metric Lineage Api V1 Metrics Lineage  Metric Code  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/metrics/aliases:
+    get:
+      tags:
+      - metrics
+      summary: Metric Aliases
+      operationId: metric_aliases_api_v1_metrics_aliases_get
+      parameters:
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Keyword
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Metric Aliases Api V1 Metrics Aliases Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/metrics/{metric_code}:
+    get:
+      tags:
+      - metrics
+      summary: Metric Detail
+      operationId: metric_detail_api_v1_metrics__metric_code__get
+      parameters:
+      - name: metric_code
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Metric Code
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Metric Detail Api V1 Metrics  Metric Code  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/memory/session:
+    post:
+      tags:
+      - memory
+      summary: Upsert Memory Session
+      operationId: upsert_memory_session_api_v1_memory_session_post
+      parameters:
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemorySessionUpsertRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Upsert Memory Session Api V1 Memory Session Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      tags:
+      - memory
+      summary: Read Memory Session
+      operationId: read_memory_session_api_v1_memory_session_get
+      parameters:
+      - name: session_id
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 64
+          title: Session Id
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Read Memory Session Api V1 Memory Session Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/work-orders:
+    get:
+      tags:
+      - work_orders
+      summary: Get Work Orders
+      operationId: get_work_orders_api_v1_work_orders_get
+      parameters:
+      - name: project_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Project Id
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Work Orders Api V1 Work Orders Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - work_orders
+      summary: Post Work Order
+      operationId: post_work_order_api_v1_work_orders_post
+      parameters:
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkOrderCreate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Post Work Order Api V1 Work Orders Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/work-orders/escalate-overdue:
+    post:
+      tags:
+      - work_orders
+      summary: Post Escalate Overdue Work Orders
+      operationId: post_escalate_overdue_work_orders_api_v1_work_orders_escalate_overdue_post
+      parameters:
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Post Escalate Overdue Work Orders Api V1 Work Orders
+                  Escalate Overdue Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/work-orders/{work_order_id}/status:
+    patch:
+      tags:
+      - work_orders
+      summary: Change Work Order Status
+      operationId: change_work_order_status_api_v1_work_orders__work_order_id__status_patch
+      parameters:
+      - name: work_order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Work Order Id
+      - name: X-Mock-User-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: mock-admin
+          title: X-Mock-User-Id
+      - name: X-Mock-User-Name
+        in: header
+        required: false
+        schema:
+          type: string
+          default: 平台管理员
+          title: X-Mock-User-Name
+      - name: X-Tenant-Id
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Tenant-Id
+      - name: X-Org-Path
+        in: header
+        required: false
+        schema:
+          type: string
+          default: CSCEC
+          title: X-Org-Path
+      - name: X-Role
+        in: header
+        required: false
+        schema:
+          type: string
+          default: platform_admin
+          title: X-Role
+      - name: X-Data-Scope
+        in: header
+        required: false
+        schema:
+          type: string
+          default: tenant
+          title: X-Data-Scope
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkOrderStatusUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Change Work Order Status Api V1 Work Orders  Work
+                  Order Id  Status Patch
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/assistant/chat:
+    post:
+      tags:
+      - assistant
+      summary: Chat
+      operationId: chat_api_v1_assistant_chat_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssistantChatRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Chat Api V1 Assistant Chat Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/assistant/project-risk-explanation:
+    post:
+      tags:
+      - assistant
+      summary: Project Risk Explanation
+      operationId: project_risk_explanation_api_v1_assistant_project_risk_explanation_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssistantProjectExplainRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Project Risk Explanation Api V1 Assistant Project
+                  Risk Explanation Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/health:
+    get:
+      summary: Health
+      operationId: health_api_v1_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Health Api V1 Health Get
+components:
+  schemas:
+    AssistantChatRequest:
+      properties:
+        message:
+          type: string
+          title: Message
+        context:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Context
+      type: object
+      required:
+      - message
+      title: AssistantChatRequest
+    AssistantProjectExplainRequest:
+      properties:
+        project_id:
+          type: string
+          title: Project Id
+        facts:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Facts
+      type: object
+      required:
+      - project_id
+      title: AssistantProjectExplainRequest
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    MemoryMessage:
+      properties:
+        role:
+          type: string
+          enum:
+          - system
+          - user
+          - assistant
+          - tool
+          title: Role
+        content:
+          type: string
+          minLength: 1
+          title: Content
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+      type: object
+      required:
+      - role
+      - content
+      title: MemoryMessage
+    MemorySessionUpsertRequest:
+      properties:
+        session_id:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Session Id
+        message:
+          $ref: '#/components/schemas/MemoryMessage'
+        context:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Context
+        summary:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Summary
+      type: object
+      required:
+      - session_id
+      - message
+      title: MemorySessionUpsertRequest
+    MetricValidateRequest:
+      properties:
+        metric_codes:
+          items:
+            type: string
+          type: array
+          title: Metric Codes
+      type: object
+      required:
+      - metric_codes
+      title: MetricValidateRequest
+    ProfileRecalculateRequest:
+      properties:
+        profile_types:
+          anyOf:
+          - items:
+              type: string
+              enum:
+              - project
+              - worker
+              - subcontractor
+            type: array
+          - type: 'null'
+          title: Profile Types
+        project_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Project Id
+      type: object
+      title: ProfileRecalculateRequest
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    AttributionRequest:
+      properties:
+        project_id:
+          type: string
+          minLength: 1
+          maxLength: 64
+          title: Project Id
+        worker_id:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Worker Id
+        subcontractor_id:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Subcontractor Id
+        accident_type:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Accident Type
+          description: Optional target accident label, e.g. 高处坠落
+        model_level:
+          type: string
+          enum:
+          - auto
+          - L2
+          - L3
+          default: auto
+          title: Model Level
+      type: object
+      required:
+      - project_id
+      title: AttributionRequest
+    AttributionResult:
+      properties:
+        model_level:
+          type: string
+          enum:
+          - L2
+          - L3
+        model_version:
+          type: string
+        need_human_review:
+          type: boolean
+        project_id:
+          type: string
+        worker_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+        subcontractor_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+        accident_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+        risk_level:
+          anyOf:
+          - type: string
+          - type: 'null'
+        factor_contributions:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        accident_type_probabilities:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        control_priorities:
+          type: array
+          items:
+            type: string
+        evidence:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        disclaimer:
+          type: string
+        case_count:
+          type: integer
+        requested_model_level:
+          type: string
+        resolved_model_level:
+          type: string
+        propagation_paths:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+          description: Present when resolved_model_level=L3
+        cpt_version:
+          anyOf:
+          - type: string
+          - type: 'null'
+        structure_version:
+          anyOf:
+          - type: string
+          - type: 'null'
+        calibration_hint:
+          anyOf:
+          - type: string
+          - type: 'null'
+        graph_supplemental_evidence:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+          description: Low-weight Neo4j neighbor evidence (L3 only)
+        neo4j_evidence_status:
+          type: string
+          enum:
+          - disabled
+          - unavailable
+          - ready
+          - applied
+      type: object
+      title: AttributionResult
+    AttributionSuccessResponse:
+      properties:
+        code:
+          type: string
+          default: SUCCESS
+        message:
+          type: string
+          default: ok
+        data:
+          $ref: '#/components/schemas/AttributionResult'
+      type: object
+      title: AttributionSuccessResponse
+    BayesianVersionItem:
+      properties:
+        config_key:
+          type: string
+        model_level:
+          type: string
+        version:
+          type: string
+        structure_version:
+          anyOf:
+          - type: string
+          - type: 'null'
+        source_path:
+          type: string
+        trained_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+        case_count:
+          anyOf:
+          - type: integer
+          - type: 'null'
+        training_alpha:
+          anyOf:
+          - type: number
+          - type: 'null'
+        prior_version:
+          anyOf:
+          - type: string
+          - type: 'null'
+        factor_count:
+          anyOf:
+          - type: integer
+          - type: 'null'
+        outcome_count:
+          anyOf:
+          - type: integer
+          - type: 'null'
+      type: object
+      title: BayesianVersionItem
+    BayesianVersionsSuccessResponse:
+      properties:
+        code:
+          type: string
+          default: SUCCESS
+        message:
+          type: string
+          default: ok
+        data:
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/BayesianVersionItem'
+          type: object
+      type: object
+      title: BayesianVersionsSuccessResponse
+    WorkOrderCreate:
+      properties:
+        work_order_type:
+          type: string
+          title: Work Order Type
+        title:
+          type: string
+          title: Title
+        work_order_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Work Order Id
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        project_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Project Id
+        subcontractor_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subcontractor Id
+        worker_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Worker Id
+        equipment_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Equipment Id
+        priority:
+          type: string
+          title: Priority
+          default: normal
+        due_time:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Due Time
+        rule_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Rule Id
+        source_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source Type
+        source_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source Id
+        responsible_user_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Responsible User Id
+      type: object
+      required:
+      - work_order_type
+      - title
+      title: WorkOrderCreate
+    WorkOrderStatusUpdate:
+      properties:
+        action:
+          type: string
+          title: Action
+      type: object
+      required:
+      - action
+      title: WorkOrderStatusUpdate

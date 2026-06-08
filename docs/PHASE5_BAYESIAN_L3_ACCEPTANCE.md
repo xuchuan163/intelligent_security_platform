@@ -18,6 +18,7 @@
 | 5 | 校准 | factor_hit_rate ≥ 0.55 | **通过** | `docs/algo/bayesian_l3_backtest.md`（81.12%） |
 | 6 | 质量 | L3 pytest 子集全绿 | **通过** | 见 §2 |
 | 7 | 合规 | `need_human_review: true` 全路径 | **通过** | L2/L3 服务与 API 测试断言 |
+| 8 | 图谱补充 | Neo4j 低权重 evidence（可选） | **通过** | `graph_evidence.py`；`NEO4J_ENABLED=false` 时 `disabled` |
 
 **Phase 5 L3 核心里程碑结论：通过**（L3-D/E/F 已交付；L4 与时序扩展未纳入）。
 

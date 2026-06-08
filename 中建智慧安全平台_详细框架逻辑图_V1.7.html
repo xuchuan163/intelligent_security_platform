@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中建集团项目工地安全智能平台 V1.7 — 详细项目框架逻辑图</title>
+<style>
+  :root {
+    --primary:#0d2137; --blue:#3b7ddd; --green:#52c41a; --purple:#722ed1;
+    --orange:#fa8c16; --pink:#eb2f96; --red:#f5222d; --cyan:#13c2c2;
+    --gold:#d48806; --teal:#0891b2; --bg:#eef1f6; --card:#ffffff;
+    --text:#1e293b; --muted:#94a3b8; --border:#e2e8f0;
+    --grad1:linear-gradient(135deg,#0d2137,#1a3a5c 50%,#1e4d7b);
+    --shadow:0 4px 24px rgba(0,0,0,.06);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:'Microsoft YaHei','PingFang SC','Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.65}
+  .loading{text-align:center;padding:100px 20px;color:var(--muted);font-size:16px}
+  .loading .spinner{width:40px;height:40px;border:4px solid #e2e8f0;border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #cdn-error{display:none;background:#fff0f0;border:1px solid #ffa39e;border-radius:12px;padding:28px;margin:40px auto;max-width:600px;text-align:center}
+  #cdn-error h3{color:var(--red);margin-bottom:12px}
+  #cdn-error p{color:#666;font-size:14px;line-height:1.8}
+  #cdn-error code{background:#fff2f0;padding:2px 8px;border-radius:4px;font-size:13px}
+  .hero{background:var(--grad1);color:#fff;padding:56px 24px 44px;text-align:center;position:relative;overflow:hidden}
+  .hero::after{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none}
+  .hero h1{font-size:34px;font-weight:800;letter-spacing:.5px;position:relative;margin-bottom:10px}
+  .hero .sub{font-size:14px;color:rgba(255,255,255,.72);position:relative;max-width:860px;margin:0 auto 20px;line-height:1.7}
+  .hero .tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;position:relative}
+  .hero .tags span{padding:5px 16px;border-radius:20px;font-size:11.5px;font-weight:600;border:1px solid rgba(255,255,255,.18)}
+  .tag-green{background:rgba(82,196,26,.2);color:#b7eb8f;border-color:rgba(82,196,26,.3)}
+  .tag-purple{background:rgba(114,46,209,.2);color:#d3adf7;border-color:rgba(114,46,209,.3)}
+  .tag-blue{background:rgba(59,125,221,.2);color:#91caff;border-color:rgba(59,125,221,.3)}
+  .nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:8px 0;overflow-x:auto;white-space:nowrap}
+  .nav-inner{max-width:1700px;margin:0 auto;padding:0 24px;display:flex;gap:2px}
+  .nav a{text-decoration:none;color:var(--muted);font-size:13px;padding:7px 14px;border-radius:7px;transition:.18s;flex-shrink:0;font-weight:500}
+  .nav a:hover,.nav a.active{color:var(--blue);background:rgba(59,125,221,.07)}
+  .wrap{max-width:1700px;margin:0 auto;padding:32px 24px}
+  .card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);margin-bottom:36px;overflow:hidden;transition:transform .2s,box-shadow .2s}
+  .card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.09)}
+  .card-hd{display:flex;align-items:center;gap:14px;padding:18px 28px;border-bottom:1px solid var(--border);background:#fafbfc}
+  .card-num{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+  .card-hd h2{font-size:18px;font-weight:700;color:var(--primary)}
+  .card-badge{font-size:10.5px;padding:3px 10px;border-radius:10px;font-weight:600}
+  .badge-core{background:#e6f7ff;color:#096dd9;border:1px solid #91d5ff}
+  .badge-new{background:#f6ffed;color:#389e0d;border:1px solid #b7eb8f}
+  .badge-up{background:#fff7e6;color:#d46b08;border:1px solid #ffd591}
+  .badge-code{background:#f9f0ff;color:#531dab;border:1px solid #d3adf7}
+  .card-body{padding:22px 28px 28px;overflow-x:auto}
+  .mermaid-wrap{display:flex;justify-content:center;background:#fcfcfd;border-radius:10px;padding:18px;border:1px dashed var(--border)}
+  .blue-bg{background:var(--blue)} .green-bg{background:var(--green)} .purple-bg{background:var(--purple)}
+  .orange-bg{background:var(--orange)} .pink-bg{background:var(--pink)} .red-bg{background:var(--red)}
+  .cyan-bg{background:var(--cyan)} .gold-bg{background:var(--gold)} .teal-bg{background:var(--teal)}
+  .slate-bg{background:#475569} .primary-bg{background:var(--primary)}
+  .ft{padding:36px 20px;text-align:center;color:var(--muted);font-size:12.5px;border-top:1px solid var(--border);margin-top:20px}
+  ::-webkit-scrollbar{height:6px;width:6px}
+  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+</style>
+</head>
+<body>
+<div id="loading-msg" class="loading">
+  <div class="spinner"></div>
+  <p>正在加载 Mermaid 图表引擎...</p>
+  <p style="font-size:12px;color:#aaa;margin-top:8px">如长时间未响应，请检查网络连接</p>
+</div>
+<div id="cdn-error">
+  <h3>⚠️ 图表引擎加载失败</h3>
+  <p>Mermaid.js 未能从以下 CDN 加载成功：<br>
+  <code>cdn.jsdelivr.net</code> &nbsp; <code>unpkg.com</code> &nbsp; <code>registry.npmmirror.com</code></p>
+  <p style="margin-top:12px"><b>解决方案：</b><br>
+  1. 请检查网络能否访问上述 CDN<br>
+  2. 可尝试使用代理或 VPN 后刷新页面<br>
+  3. 或手动下载 <code>mermaid@10/dist/mermaid.min.js</code> 放到本文件同目录下</p>
+</div>
+
+<div id="main-content" style="display:none">
+<div class="hero">
+  <h1>🏗️ 中建集团项目工地安全智能平台</h1>
+  <p class="sub">基于大语言模型、NL2SQL、四库协同、指标语义层、Agent 记忆与三类安全风险画像的施工安全智能管控平台<br><b>技术开发文档 V1.7</b> — Agent工程化与基础设施落地增强版 — <b>完整项目框架逻辑图</b></p>
+  <div class="tags">
+    <span class="tag-green">🆕 Agent记忆四层架构</span>
+    <span class="tag-purple">🆕 Prompt工程规范</span>
+    <span class="tag-blue">🆕 多租户组织域隔离</span>
+    <span class="tag-green">🆕 LLM私有化部署</span>
+    <span class="tag-purple">🆕 Agent安全攻防</span>
+    <span class="tag-blue">🆕 反馈学习闭环</span>
+  </div>
+</div>
+<div class="nav">
+  <div class="nav-inner">
+    <a href="#s01">一·七层架构</a><a href="#s02">二·数据流</a><a href="#s03">三·四库协同</a>
+    <a href="#s04">四·三类画像</a><a href="#s05">五·风险公式</a><a href="#s06">六·动态系数</a>
+    <a href="#s07">七·Agent协同</a><a href="#s08">八·DAG编排</a><a href="#s09">九·冲突仲裁</a>
+    <a href="#s10">十·记忆系统</a><a href="#s11">十一·多租户</a><a href="#s12">十二·业务闭环</a>
+    <a href="#s13">十三·隐患工单</a><a href="#s14">十四·NL2SQL</a><a href="#s15">十五·Prompt</a>
+    <a href="#s16">十六·安全攻防</a><a href="#s17">十七·反馈学习</a><a href="#s18">十八·LLM部署</a>
+    <a href="#s19">十九·物理部署</a><a href="#s20">二十·ER模型</a><a href="#s21">二一·研发拆解</a>
+    <a href="#s22">二二·数据质量</a><a href="#s23">二三·技术栈</a><a href="#s24">二四·全景</a>
+  </div>
+</div>
+<div class="wrap">
+<div class="card" id="s01"><div class="card-hd"><div class="card-num blue-bg">一</div><h2>总体七层架构图（含代码模块映射）</h2><span class="card-badge badge-core">核心架构</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+graph TB
+    subgraph L7["🖥️ 用户交互层 — frontend-web / mobile-h5 / wechat-miniapp"]
+        direction LR
+        WEB["Web端管理后台<br/>Vue3 + ECharts"]
+        MOBILE["移动端APP<br/>离线暂存·拍照上传"]
+        WECHART["企业微信<br/>消息推送·快捷问数"]
+        DASHBOARD["驾驶舱大屏<br/>FineBI / Superset"]
+    end
+    subgraph L6["📊 业务应用层 — business-api-gateway"]
+        direction LR
+        B1["三类风险画像"]
+        B2["智能问数"]
+        B3["隐患整改"]
+        B4["报告生成"]
+        B5["精准培训"]
+        B6["风险预警"]
+        B7["工单督办"]
+    end
+    subgraph L5["🤖 Agent编排层 — agent-orchestrator / prompt-service"]
+        direction LR
+        MASTER["主控 Agent"]
+        AG1["智能问数Agent"]
+        AG2["画像分析Agent"]
+        AG3["隐患整改Agent"]
+        AG4["风险预警Agent"]
+        AG5["报告生成Agent"]
+        AG6["培训出题Agent"]
+        TOOLS["工具模块 ×7"]
+        MEM["记忆管理模块"]
+    end
+    subgraph L4["🧠 智能能力层"]
+        direction LR
+        LLM["LLM大模型<br/>Qwen·DeepSeek·GLM"]
+        NL2SQL["NL2SQL引擎<br/>Schema Linking·AST审计"]
+        RAG["RAG检索增强<br/>双路检索·Rerank"]
+        KG["知识图谱 Neo4j"]
+        RULE["规则引擎<br/>Drools/自研"]
+        BAYES["贝叶斯归因(L3+)"]
+    end
+    subgraph L3["🗄️ 数据服务层"]
+        direction LR
+        SEM["指标语义层"]
+        DQ["数据质量层"]
+        AUTH["权限与审计层<br/>tenant_id·org_path"]
+    end
+    subgraph L2["💾 存储计算层（四库协同+时序库）"]
+        direction LR
+        MYSQL["MySQL 8.0 MGR"]
+        NEO4J["Neo4j 5.x Causal"]
+        MILVUS["Milvus 2.4+ Cluster"]
+        REDIS["Redis 7.x Cluster"]
+        TSDB["时序库 InfluxDB/TDengine"]
+    end
+    subgraph L1["📡 数据采集层（12系统·5模式）"]
+        direction LR
+        S1["劳务实名制"];S2["隐患管理"];S3["智慧工地"];S4["视频监控"]
+        S5["特种设备"];S6["进度计划"];S7["BIM系统"];S8["财务成本"]
+        S9["物资采购"];S10["OA审批"];S11["应急管理"];S12["事故管理"]
+    end
+    L1-->L2-->L3-->L4-->L5-->L6-->L7
+    style L1 fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px
+    style L2 fill:#e8f4fd,stroke:#3b7ddd,stroke-width:2px
+    style L3 fill:#e8f4fd,stroke:#3b7ddd,stroke-width:2px
+    style L4 fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+    style L5 fill:#f5edff,stroke:#722ed1,stroke-width:2px
+    style L6 fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style L7 fill:#fff0f6,stroke:#eb2f96,stroke-width:2px
+</pre></div></div></div>
+
+<div class="card" id="s02"><div class="card-hd"><div class="card-num cyan-bg">二</div><h2>系统上下文与数据流向图（含集成模式与SLA）</h2><span class="card-badge badge-core">核心</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph UP["上游业务系统（12系统·5模式·分级SLA）"]
+        direction LR
+        US1["实名制 API/视图 T+0/T+1"];US2["隐患管理 API/MQ T+0实时"]
+        US3["智慧工地 IoT/MQ 实时/5min"];US4["视频监控 CV事件 实时"]
+        US5["特种设备 API T+1"];US6["进度/BIM API/文件 T+1"]
+        US7["财务物资 API/DW T+1/T+7"];US8["OA/应急 Webhook T+0/T+1"]
+    end
+    subgraph PLAT["中建工地安全智能平台 — 核心处理链路"]
+        direction TB
+        A["📥 数据接入层<br/>API拉取·MQ消费·文件导入<br/>断点续传·幂等去重·对账补偿"]
+        B["🔧 数据治理层<br/>统一ID·主数据·6维质量校验<br/>缺失处理·stale·低置信度"]
+        C["📐 指标语义层<br/>指标定义·维度·权限·血缘<br/>NL2SQL映射·版本管理"]
+        D["🧮 画像计算<br/>日批全量(2000项目≤2h)+事件增量(5min内)<br/>基础分×动态修正+强规则触发"]
+        E["⚡ 强规则引擎<br/>30+规则·版本·红线不可被LLM覆盖"]
+        F["🤖 智能能力<br/>LLM·NL2SQL(Schema Linking+AST审计)·RAG<br/>知识图谱·规则引擎·贝叶斯"]
+        G["🧭 多Agent协同<br/>主控(DAG分解)·6核心Agent·7工具<br/>记忆管理·冲突仲裁"]
+        H["📋 工单闭环<br/>7类工单·状态机·超时升级<br/>OA联动·微信推送·隐患回写"]
+    end
+    subgraph DOWN["下游输出与联动"]
+        direction LR
+        D1["企业微信"];D2["OA审批"];D3["隐患回写"];D4["OpenAPI"];D5["Webhook"]
+    end
+    UP-->A-->B-->C-->D-->E-->F-->G-->H-->DOWN
+    DOWN-.->|"执行回写→增量重算"|D
+    E-.->|"高风险直通"|G
+    style UP fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px
+    style PLAT fill:#fafbfd,stroke:#1a3a5c,stroke-width:3px
+    style DOWN fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style A fill:#e6f0ff,stroke:#3b7ddd;style B fill:#e8f4fd,stroke:#3b7ddd
+    style C fill:#e8f4fd,stroke:#3b7ddd;style D fill:#d9f7be,stroke:#52c41a
+    style E fill:#fff0f0,stroke:#f5222d;style F fill:#f0ffe6,stroke:#52c41a
+    style G fill:#f5edff,stroke:#722ed1;style H fill:#fff7e6,stroke:#fa8c16
+</pre></div></div></div>
+
+<div class="card" id="s03"><div class="card-hd"><div class="card-num blue-bg">三</div><h2>四库协同存储架构与最终一致性策略</h2><span class="card-badge badge-core">核心</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph APP_L["应用查询层"]
+        direction LR
+        Q1["画像查询 P95≤800ms"];Q2["智能问数 P99≤15s"]
+        Q3["Agent协同 同步≤30s"];Q4["预警展示 实时"];Q5["工单管理 P95≤500ms"]
+    end
+    subgraph CACHE_L["Redis 7.x Cluster — 缓存/状态层"]
+        direction LR
+        R1["画像缓存 profile:* TTL:1天"];R2["会话记忆 session:* TTL:30min-2h"]
+        R3["任务Checkpoint task:* TTL:2h"];R4["问数结果 nl2sql:* TTL:5min"];R5["预警/气象 alert:* TTL:30min"]
+    end
+    subgraph STORE["持久存储集群（四库协同+时序库）"]
+        subgraph MYSQL_G["MySQL 8.0 — 结构化事实主库"]
+            M1["画像结果表"];M2["工单/隐患/台账"];M3["指标聚合/快照"];M4["主数据映射"];M5["Checkpoint审计"]
+        end
+        subgraph NEO4J_G["Neo4j 5.x — 安全关系图谱"]
+            N1["项目-分包-班组-工人"];N2["隐患归属·设备关联"];N3["事故相似·风险传导"]
+        end
+        subgraph MILVUS_G["Milvus 2.4+ — 向量知识库"]
+            V1["安全规范"];V2["事故/整改案例"];V3["设备/环境案例"];V4["行为摘要(二期)"]
+        end
+        subgraph TSDB_G["时序库 — InfluxDB/TDengine"]
+            T1["基坑监测"];T2["扬尘噪声"];T3["设备运行"]
+        end
+    end
+    subgraph SYNC["最终一致性同步（异步事件驱动）"]
+        S["画像完成→profile.calculated→MySQL写→Redis刷→Neo4j异步更新→Milvus异步向量化<br/>延迟: 秒~分钟级 | 补偿: 定时对账"]
+    end
+    APP_L-->CACHE_L-->STORE
+    SYNC-->STORE
+    style APP_L fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style CACHE_L fill:#fff0f6,stroke:#eb2f96,stroke-width:2px
+    style STORE fill:#e8f4fd,stroke:#3b7ddd,stroke-width:2px
+    style SYNC fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+    style MYSQL_G fill:#e6f0ff,stroke:#3b7ddd;style NEO4J_G fill:#f5edff,stroke:#722ed1
+    style MILVUS_G fill:#fff7e6,stroke:#fa8c16;style TSDB_G fill:#e6fff0,stroke:#13c2c2
+</pre></div></div></div>
+
+<div class="card" id="s04"><div class="card-hd"><div class="card-num orange-bg">四</div><h2>三类安全风险画像体系（维度·权重·指标明细）</h2><span class="card-badge badge-core">核心</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph PROFILES["三类安全风险画像体系"]
+        subgraph PP["🏗️ 项目安全风险画像 — 人·机·环·管·投入·进度·应急"]
+            direction LR
+            PP1["隐患整改 22%<br/>隐患总量·重大隐患·整改及时率<br/>闭环率·复查不通过率·重复隐患率"]
+            PP2["高危作业 16%<br/>危大工程·超危大·动火·吊装<br/>有限空间·高处·作业票合规率"]
+            PP3["分包商传导 14%<br/>高风险分包商数量/占比<br/>隐患贡献率·整改超期率"]
+            PP4["设备机械 12%<br/>超期未检率·维保完整率<br/>故障频次·安拆审批·持证率"]
+            PP5["进度压力 10%<br/>工期压缩指数·夜间施工·交叉作业<br/>关键节点压力·出勤异常"]
+            PP6["环境监测 8%<br/>大风·暴雨·高温·寒潮·基坑<br/>地下水位·扬尘噪声"]
+            PP7["现场行为 8%<br/>PPE合规·违章作业<br/>视频AI告警"]
+            PP8["管理配置 6%<br/>安全员达标率·到岗率<br/>旁站覆盖率"]
+            PP9["安全投入 4%<br/>费用计提使用率<br/>PPE配置充足率"]
+        end
+        subgraph WP["👷 工人安全风险画像"]
+            direction LR
+            WP1["安全考核 25%"];WP2["违规行为 35%"];WP3["作业资质 15%"]
+            WP4["体检健康 10%"];WP5["年龄适配 5%"];WP6["场景修正 10%"]
+        end
+        subgraph SP["🏢 分包商安全风险画像"]
+            direction LR
+            SP1["准入合规 15%"];SP2["人员管理 18%"];SP3["隐患整改 22%"]
+            SP4["违规表现 12%"];SP5["设备管理 10%"];SP6["管理配置 8%"]
+            SP7["安全投入 5%"];SP8["应急能力 5%"];SP9["事故信用 5%"]
+        end
+    end
+    subgraph STRONG["强规则引擎 🔴 最高优先级·不可被LLM覆盖"]
+        direction LR
+        SR1["重大隐患超期 +20·至少高风险"];SR2["无证特种作业 +25·至少高风险"]
+        SR3["设备超期未检 +25·至少高风险"];SR4["未审批施工 +30·至少极高"]
+        SR5["事故险情 +30·专项复盘"];SR6["极端天气高危·现场督办"]
+    end
+    subgraph LEVEL["四级风险等级"]
+        direction LR
+        LV0["🟢 0-30 低风险·常规"];LV1["🟡 31-60 中风险·加强"]
+        LV2["🟠 61-80 高风险·重点管控"];LV3["🔴 81-100 极高·立即干预"]
+    end
+    PROFILES-->STRONG-->LEVEL
+    style PP fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px
+    style WP fill:#f5edff,stroke:#722ed1,stroke-width:2px
+    style SP fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style STRONG fill:#fff0f0,stroke:#f5222d,stroke-width:2px
+    style LEVEL fill:#fcfcfd,stroke:#666,stroke-width:2px
+</pre></div></div></div>
+
+<div class="card" id="s05"><div class="card-hd"><div class="card-num red-bg">五</div><h2>风险计算公式全链路</h2><span class="card-badge badge-code">算法</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph INPUT["输入层"]
+        I1["各维度指标值（指标语义层产出）"];I2["维度权重（集团统一/差异化）"]
+    end
+    subgraph STEP1["Step 1: 基础加权风险分"]
+        B["基础分 = Σ(维度得分×权重)  Σ权重=100%<br/>缺失维度:排除·权重按比例重分配"]
+    end
+    subgraph STEP2["Step 2: 时间窗口衰减"]
+        TW["一般隐患: 0-30d×1.0, 31-90d×0.5<br/>工人违规: 0-30d×1.0, 31-90d×0.5, 91-180d×0.2<br/>设备异常: 闭环前持续有效, 闭环后7d×0.3<br/>重大隐患: 闭环前持续有效, 闭环后30d×0.5"]
+    end
+    subgraph STEP3["Step 3: 动态修正系数"]
+        DY["动态修正 = min(1.50, 1.00 + ΣΔ)<br/>赶工期+0.15 | 夜间施工+0.08 | 交叉作业+0.10<br/>极端天气+0.20 | 重大隐患未闭环+0.20<br/>设备异常+0.15 | 管理缺岗+0.10<br/>同类取最高·不同可叠加·上限1.50"]
+    end
+    subgraph STEP4["Step 4: 强规则触发"]
+        SR["重大隐患超期: +20·至少高风险<br/>无证特种作业: +25·至少高风险<br/>未审批施工: +30·至少极高<br/>设备超期未检: +25·至少高风险<br/>事故/险情: +30·专项复盘"]
+    end
+    subgraph OUTPUT["最终输出"]
+        FINAL["最终风险分 = min(100, 基础分×动态修正 + 强规则触发分)<br/>四级等级: 低0-30/中31-60/高61-80/极高81-100<br/>输出:维度贡献·动态因子·触发规则·完整度·置信度·人工复核建议"]
+    end
+    INPUT-->STEP1-->STEP2-->STEP3-->STEP4-->OUTPUT
+    style INPUT fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px
+    style STEP1 fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+    style STEP2 fill:#e6fff0,stroke:#13c2c2,stroke-width:2px
+    style STEP3 fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style STEP4 fill:#fff0f0,stroke:#f5222d,stroke-width:2px
+    style OUTPUT fill:#f5edff,stroke:#722ed1,stroke-width:2px
+    style FINAL fill:#0d2137,color:#fff
+</pre></div></div></div>
+
+<div class="card" id="s06"><div class="card-hd"><div class="card-num orange-bg">六</div><h2>动态修正系数量化规则与画像重算触发</h2><span class="card-badge badge-code">算法</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph FACTORS["7个动态因子（因子表+上限约束）"]
+        F1["DF-SCH-001 赶工期 工期压缩>20% →+0.15"];F2["DF-SCH-002 夜间施工 7天≥3天 →+0.08"]
+        F3["DF-SCH-003 交叉作业 高危≥2类 →+0.10"];F4["DF-WEA-001 极端天气 橙/红预警 →+0.20"]
+        F5["DF-HZD-001 重大隐患未闭环 >0 →+0.20"];F6["DF-EQP-001 设备告警未处置 →+0.15"]
+        F7["DF-MGT-001 管理缺岗≥1天 →+0.10"]
+    end
+    subgraph RULES["叠加规则"]
+        R1["同类因素只取最高等级·天气不重复叠加"];R2["不同因素增量求和·上限1.50"]
+        R3["有效期24h-7天·超期重评估"];R4["所有因子进入明细表·支持解释和回测"]
+    end
+    subgraph TRIGGERS["画像重算触发（日批全量+事件增量）"]
+        T1["⏰ 每日凌晨:全量2000项目≤2h"];T2["🚨 重大隐患:项目·分包商"]
+        T3["⚠️ 事故险情:项目·分包商·人员"];T4["📋 证书变更:工人·分包商"]
+        T5["⚙️ 设备异常:项目·责任单位"];T6["🌡️ 极端天气:区域项目"]
+    end
+    FACTORS-->RULES-->TRIGGERS
+    style FACTORS fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style RULES fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px
+    style TRIGGERS fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+</pre></div></div></div>
+
+<div class="card" id="s07"><div class="card-hd"><div class="card-num purple-bg">七</div><h2>多 Agent 协同架构图</h2><span class="card-badge badge-core">核心</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph USER_IN["用户交互入口"]
+        U1["Web端提问"];U2["企业微信提问"];U3["API调用"];U4["定时任务触发"]
+    end
+    subgraph MASTER["🧭 主控 Agent — agent-orchestrator"]
+        M1["①意图识别 5类"];M2["②权限+组织域校验"];M3["③DAG分解 并行/串行"]
+        M4["④工具路由"];M5["⑤冲突仲裁"];M6["⑥结果汇总"]
+    end
+    subgraph CORE["核心 Agent ×6 (MVP)"]
+        AG1["💬 智能问数"];AG2["📊 画像分析"];AG3["🔧 隐患整改"];AG4["⚠️ 风险预警"];AG5["📝 报告生成"];AG6["🎓 培训出题"]
+    end
+    subgraph TOOLS_M["工具模块 ×7"]
+        T1["设备安全"];T2["环境监测"];T3["进度压力"];T4["安全投入"];T5["应急管理"];T6["管理配置"];T7["案例检索"]
+    end
+    subgraph KNOW["知识/数据底座"]
+        K1["指标语义层"];K2["四库协同"];K3["强规则库"];K4["事故案例库"];K5["Agent记忆4层"]
+    end
+    USER_IN-->MASTER-->CORE
+    CORE-->TOOLS_M;TOOLS_M-->KNOW;CORE-->KNOW
+    CORE-.->|"输出→主控汇总"|MASTER;MASTER-->USER_IN
+    style USER_IN fill:#fff0f6,stroke:#eb2f96,stroke-width:2px
+    style MASTER fill:#ede0ff,stroke:#722ed1,stroke-width:3px
+    style CORE fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px
+    style TOOLS_M fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style KNOW fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+</pre></div></div></div>
+
+<div class="card" id="s08"><div class="card-hd"><div class="card-num purple-bg">八</div><h2>主控 Agent DAG 任务分解与编排拓扑</h2><span class="card-badge badge-code">代码逻辑</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph INTENTS["5类意图·编排拓扑"]
+        IT1["metric_query: 主控→问数→解释"]
+        IT2["risk_explain: 并行(画像+设备+进度+环境+隐患)→预警→汇总"]
+        IT3["hazard_rectify: 串行(查询→检索→生成→人工确认)"]
+        IT4["report_generate: 并行(问数+画像+预警+工单)→报告生成"]
+        IT5["work_order_followup: 主控→工单查询→预警→督办"]
+    end
+    subgraph RISK_DAG["risk_explain DAG 详细编排"]
+        RD1["主控:意图识别+权限校验"]-->RD_PAR["并行执行（5路并发）"]
+        RD_PAR-->RD2["画像分析 Agent"];RD_PAR-->RD3["设备安全工具"];RD_PAR-->RD4["进度压力工具"]
+        RD_PAR-->RD5["环境监测工具"];RD_PAR-->RD6["隐患整改 Agent"]
+        RD2-->RD7["预警Agent:规则+阈值校验"];RD3-->RD7;RD4-->RD7;RD5-->RD7;RD6-->RD7
+        RD7-->RD8["主控:冲突仲裁+事实锚定"]-->RD9["报告生成Agent:自然语言解释"]
+    end
+    subgraph SERIAL["串行调用（依赖上下文·需人工确认）"]
+        S1["隐患查询→知识检索→整改生成→人工确认"];S2["NL2SQL: 歧义澄清→口径确认→生成SQL"]
+        S3["涉权益: 停工/清退/作业限制→必须人工复核"]
+    end
+    INTENTS-->RISK_DAG;INTENTS-->SERIAL
+    style INTENTS fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px
+    style RISK_DAG fill:#f5edff,stroke:#722ed1,stroke-width:2px
+    style SERIAL fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style RD_PAR fill:#d9f7be,stroke:#389e0d,stroke-width:2px
+</pre></div></div></div>
+
+<div class="card" id="s09"><div class="card-hd"><div class="card-num red-bg">九</div><h2>多 Agent 冲突仲裁策略与结果汇总协议</h2><span class="card-badge badge-code">代码逻辑</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph PRIORITY["冲突仲裁优先级（从高到低）"]
+        P1["🔴 强规则/制度红线<br/>重大隐患·无证作业·未审批·不可被LLM覆盖"]
+        P2["🗄️ 结构化事实库 MySQL<br/>画像·工单·隐患·证书·考核"]
+        P3["📐 指标语义层计算结果<br/>统一口径·多系统对账"]
+        P4["🔗 Neo4j关系推断+案例库<br/>图谱关系·事故/整改案例"]
+        P5["📚 RAG检索摘要<br/>制度条款·规范文本"]
+        P6["💬 LLM自然语言推理<br/>优先级最低·仅用于解释"]
+    end
+    subgraph CONFLICTS["典型冲突处理"]
+        C1["规则vsLLM: LLM认为可施工但强规则触发→以规则为准"];C2["画像vs预警: 画像中风险但重大隐患刚新增→以事件为准·增量重算"]
+        C3["问数vs报告: SQL值≠报告摘要→报告前重新引用SQL"];C4["RAGvs制度: 检索到旧条款→以最新版本为准"]
+        C5["数据缺失: 看似低风险→标记低置信度·强制人工复核"]
+    end
+    subgraph OUTPUT_FMT["主控Agent汇总输出协议"]
+        O1["final_conclusion"];O2["evidence[] 来源引用"];O3["conflicts[] 冲突+仲裁"]
+        O4["confidence 高低"];O5["human_review_required"];O6["recommended_actions[]"]
+    end
+    PRIORITY-->CONFLICTS-->OUTPUT_FMT
+    style PRIORITY fill:#fff0f0,stroke:#f5222d,stroke-width:2px
+    style CONFLICTS fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style OUTPUT_FMT fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+    style P1 fill:#ffd9d9,stroke:#f5222d
+</pre></div></div></div>
+
+<div class="card" id="s10"><div class="card-hd"><div class="card-num pink-bg">十</div><h2>Agent 记忆与上下文管理机制（四层架构）</h2><span class="card-badge badge-new">V1.7新增</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph PRINCIPLE["设计原则：不建泛化LLM长期记忆"]
+        P1["❌ 不让Agent记住一切"];P2["✅ 能查表的不写入记忆"]
+        P3["✅ 能靠规则的不依赖推断"];P4["✅ 案例=组织资产(案例库)"]
+        P5["✅ 所有关键判断以L4结构化事实为准"]
+    end
+    subgraph L1["L1 会话记忆 · Session Memory（MVP必做）"]
+        L1S["Redis·30min-2h TTL<br/>Key:session:user_id:session_id"]
+        L1C["最近5-10轮摘要·project_id·time_range<br/>last_intent·ref_id"]
+        L1U["用途:多轮追问 禁止:大SQL·健康明细"]
+    end
+    subgraph L2["L2 任务状态 · Working Memory（MVP必做）"]
+        L2S["Redis+MySQL双写<br/>Key:task:task_id"]
+        L2C["task_id·status·sub_tasks·result_ref<br/>error·timeout_flag"]
+        L2U["用途:长任务编排·失败恢复·Checkpoint"]
+    end
+    subgraph L3["L3 语义摘要 · Semantic Memory（二期）"]
+        L3S["Milvus+MySQL标签<br/>Collection:behavior_memory"]
+        L3C["工人错题·培训薄弱点·违规摘要"]
+        L3U["用途:个性化培训·行为提醒 前提:合规完善后启用"]
+    end
+    subgraph L4["L4 结构化事实 · Structured State（非LLM记忆）"]
+        L4S["MySQL+Neo4j+规则引擎"]
+        L4C["三类画像·隐患台账·工单·考核·图谱·规则日志"]
+        L4U["所有关键判断的唯一事实依据<br/>Agent解释只能引用L4检索结果"]
+    end
+    PRINCIPLE-->L1-->L2-->L3-->L4
+    style PRINCIPLE fill:#fff0f0,stroke:#f5222d,stroke-width:2px
+    style L1 fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px
+    style L2 fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style L3 fill:#f5edff,stroke:#722ed1,stroke-width:2px
+    style L4 fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+</pre></div></div></div>
+
+<div class="card" id="s11"><div class="card-hd"><div class="card-num gold-bg">十一</div><h2>集团多级组织域与多租户隔离设计</h2><span class="card-badge badge-new">V1.7新增</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph ORG["集团多级组织树"]
+        CSCEC["CSCEC 中建集团"]-->BUREAU["CSCEC-8B 工程局"]-->REGION["EAST-REGION 区域"]
+        REGION-->PROJECT2["PROJECT-P001 项目部"]-->SUBCON["SUB-S001 分包商"]-->TEAM2["TEAM-T01 班组"]-->WORKER2["工人"]
+    end
+    subgraph ISOLATION["数据隔离机制"]
+        I1["所有表保留 tenant_id + org_path"]
+        I2["行级过滤: WHERE tenant_id=:tid AND org_path LIKE :path%"]
+        I3["Agent调用前: 身份·角色·组织域·项目范围四重校验"]
+        I4["NL2SQL: 仅授权范围内生成受控查询"]
+        I5["敏感数据最小授权: 不因上级可看统计默认开放个人明细"]
+    end
+    subgraph CONFIG["差异化配置继承"]
+        CF1["集团默认配置（红线不可关闭）"]-->CF2["⬇️ 工程局（可调高敏感度）"]-->CF3["⬇️ 区域公司"]-->CF4["⬇️ 项目（最高优先级）"]
+        CF5["⚠️ 强规则红线不得被下级关闭·指标口径变更需审批"]
+    end
+    ORG-->ISOLATION-->CONFIG
+    style ORG fill:#e8f4fd,stroke:#3b7ddd,stroke-width:2px
+    style ISOLATION fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+    style CONFIG fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style CSCEC fill:#0d2137,color:#fff;style BUREAU fill:#3b7ddd,color:#fff
+    style REGION fill:#52c41a,color:#fff;style PROJECT2 fill:#fa8c16,color:#fff
+    style SUBCON fill:#722ed1,color:#fff;style TEAM2 fill:#eb2f96,color:#fff;style WORKER2 fill:#13c2c2,color:#fff
+</pre></div></div></div>
+
+<div class="card" id="s12"><div class="card-hd"><div class="card-num green-bg">十二</div><h2>核心业务全景闭环流程图</h2><span class="card-badge badge-core">核心</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TD
+    A["📡 Step 1: 多源数据接入<br/>12系统·5模式·日批+事件增量"]-->B
+    B["🔧 Step 2: 数据治理<br/>统一ID·6维质量·缺失处理·对账"]-->C
+    C["📐 Step 3: 指标语义层<br/>指标定义·维度·权限·血缘"]-->D
+    D["🧮 Step 4: 画像模型计算<br/>项目|工人|分包商·时间衰减·动态修正"]-->E
+    E{"⚡ Step 5: 强规则引擎 触发?"}-->|"高/极高"|G
+    E-->|"低/中"|H
+    G["🤖 Step 6: Agent解释与建议<br/>画像分析·隐患整改·预警<br/>事实锚定·引用溯源·置信度"]
+    H["📊 Step 7: 常规监控<br/>驾驶舱·趋势·大屏"]
+    G-->I["📋 Step 8: 工单派发<br/>整改·预警·培训·约谈·限制·核查"]
+    I-->J["👤 Step 9: 人工执行<br/>整改·培训·复查·OA审批"]
+    J-->K{"✅ Step 10: 复查验收"}
+    K-->|"通过"|L;K-->|"不通过"|I
+    L["📁 Step 11: 案例沉淀<br/>整改案例库·事故标注·知识库更新"]
+    L-->M["📈 Step 12: 模型校准<br/>权重调优·规则更新·偏差检测·季度复盘"]
+    M-->D;H-->D
+    style A fill:#e6f0ff,stroke:#3b7ddd;style B fill:#e8f4fd,stroke:#3b7ddd
+    style C fill:#e8f4fd,stroke:#3b7ddd;style D fill:#d9f7be,stroke:#52c41a
+    style E fill:#fff0f0,stroke:#f5222d;style G fill:#f5edff,stroke:#722ed1
+    style I fill:#fff7e6,stroke:#fa8c16;style J fill:#fff7e6,stroke:#fa8c16
+    style L fill:#e6fff0,stroke:#13c2c2;style M fill:#f0ffe6,stroke:#52c41a
+</pre></div></div></div>
+
+<div class="card" id="s13"><div class="card-hd"><div class="card-num green-bg">十三</div><h2>隐患整改与工单督办闭环图</h2><span class="card-badge badge-core">核心</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart LR
+    subgraph DISCOVER["🔍 5大发现源"]
+        D1["👁️巡检"];D2["📹视频AI"];D3["👷工人反馈"];D4["⚙️设备报警"];D5["🌡️环境监测"]
+    end
+    subgraph AI["🤖 Agent智能处理"]
+        P1["①分类定级<br/>重大/一般"];P2["②整改措施<br/>期限+规范依据"];P3["③复查要点<br/>规范条款+案例"];P4["④生成工单<br/>派发+通知+SLA"]
+    end
+    subgraph WF["📋 工单状态机"]
+        W1["待确认"]-->W2["已派发"]-->W3["执行中"]-->W4["待复查"]-->W5["✅ 已闭环"]
+        W4-->|"不合格"|W3;W1-.->W6["驳回"];W2-.->W7["转派"];W3-.->W8["⚡超期升级"]
+    end
+    subgraph ESC["🚨 三级超时升级"]
+        E1["+1天→安全员"]-->E2["+3天→项目经理"]-->E3["+7天→集团安全部"]
+    end
+    DISCOVER-->AI-->WF;W8-->ESC
+    style DISCOVER fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px
+    style AI fill:#f5edff,stroke:#722ed1,stroke-width:2px
+    style WF fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style ESC fill:#fff0f0,stroke:#f5222d,stroke-width:2px
+    style W5 fill:#d9f7be,stroke:#389e0d
+</pre></div></div></div>
+
+<div class="card" id="s14"><div class="card-hd"><div class="card-num purple-bg">十四</div><h2>NL2SQL 智能问数架构（8步处理链路）</h2><span class="card-badge badge-up">V1.7增强</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph QUERY["用户自然语言提问"]
+        Q1["A项目本周风险为什么升高?"];Q2["各分包商整改超期率排名?"]
+    end
+    subgraph NL2SQL["NL2SQL 8步处理链路 — nl2sql-service"]
+        N1["①意图识别:实体·时间·指标"];N2["②歧义澄清:指标歧义·维度歧义"]
+        N3["③指标匹配:查metric_catalog·权限校验"];N4["④Schema Linking:实体→表/列·JOIN路径"]
+        N5["⑤SQL生成:受控SELECT·多表·聚合·对比"];N6["⑥白名单+SQL审计:AST解析·注入检测·禁止全表扫描"]
+        N7["⑦执行查询:P99≤15s·分级超时·失败兜底"];N8["⑧结果解释:自然语言转述·引用溯源·置信度"]
+    end
+    subgraph METRIC["指标语义层 — metric-semantic-service"]
+        M1["📋指标定义:编码·口径·公式"];M2["📐维度:类型·阶段·区域"];M3["🗺️映射:表→字段→过滤"]
+        M4["🔐权限:角色可查范围"];M5["🔗血缘:指标→原始数据"];M6["📖映射:别名·同义词"];M7["📝版本:变更·历史口径"]
+    end
+    QUERY-->NL2SQL;NL2SQL<-->METRIC;N3-->METRIC
+    style QUERY fill:#fff0f6,stroke:#eb2f96,stroke-width:2px
+    style NL2SQL fill:#f5edff,stroke:#722ed1,stroke-width:2px
+    style METRIC fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+</pre></div></div></div>
+
+<div class="card" id="s15"><div class="card-hd"><div class="card-num purple-bg">十五</div><h2>Prompt Engineering 规范与组装策略</h2><span class="card-badge badge-new">V1.7新增</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph INPUT_V["输入变量注入"]
+        IV1["user_role·tenant_id·org_path"];IV2["project_id·time_range·metric_code"];IV3["强规则列表·案例·置信度"]
+    end
+    subgraph ASSEMBLY["Prompt 三层组装"]
+        A1["System Prompt（固定·版本管理）<br/>角色定义·领域边界·安全约束·输出格式"]
+        A2["Context Prompt（准静态·按组织域）<br/>组织域·指标摘要·规则摘要·权限范围"]
+        A3["Dynamic Prompt（每次请求注入）<br/>用户问题·对象·时间·会话上下文"]
+    end
+    subgraph AGENTS_P["6核心Agent Prompt骨架"]
+        AG1["主控:意图·DAG·路由·仲裁"];AG2["问数:Schema Linking·SQL·审计"]
+        AG3["画像:风险分解·维度·趋势"];AG4["整改:分类·措施·规范引用"]
+        AG5["预警:规则匹配·阈值·升级"];AG6["报告:模板·数据·引用校验"]
+    end
+    subgraph GOV_P["Prompt治理 — prompt-service"]
+        GV1["版本管理"];GV2["灰度发布 按租户/组织域"];GV3["评测门禁 准确率·安全率"];GV4["回滚机制 保留稳定版本"]
+    end
+    INPUT_V-->ASSEMBLY-->AGENTS_P;GOV_P-->AGENTS_P
+    style INPUT_V fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px
+    style ASSEMBLY fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+    style AGENTS_P fill:#f5edff,stroke:#722ed1,stroke-width:2px
+    style GOV_P fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+</pre></div></div></div>
+
+<div class="card" id="s16"><div class="card-hd"><div class="card-num red-bg">十六</div><h2>Agent 安全攻防三层防护体系</h2><span class="card-badge badge-new">V1.7新增</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph ATTACK["威胁模型"]
+        AT1["Prompt Injection"];AT2["越权问数 跨组织域"];AT3["工具参数污染 SQL注入"];AT4["敏感输出 健康·定位"]
+    end
+    subgraph DEFENSE["三层防护体系"]
+        subgraph L1["🛡️ 前置拦截层"]
+            D1["输入清洗:关键词·编码·长度"];D2["强制注入:tenant_id·org_path"];D3["角色验证:身份+授权范围"]
+        end
+        subgraph L2["🛡️ 执行中校验层"]
+            D4["SQL AST审计:白名单·禁止DML"];D5["工具参数:类型·范围·枚举·正则"];D6["每次调用前:权限+组织域复验"]
+        end
+        subgraph L3["🛡️ 输出后过滤层"]
+            D7["敏感过滤:正则+NER+脱敏"];D8["高风险:强制置信度+人工复核"];D9["全链路审计:task_id·model·prompt·证据"]
+        end
+    end
+    subgraph METRICS["安全目标"]
+        M1["Injection拦截≥99%"];M2["越权拦截100%"];M3["SQL注入防护100%"];M4["敏感过滤≥99.5%"]
+    end
+    ATTACK-->DEFENSE-->METRICS
+    style ATTACK fill:#fff0f0,stroke:#f5222d,stroke-width:2px
+    style DEFENSE fill:#e8f4fd,stroke:#3b7ddd,stroke-width:2px
+    style METRICS fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+    style L1 fill:#fff7e6,stroke:#fa8c16;style L2 fill:#e6f0ff,stroke:#3b7ddd;style L3 fill:#f5edff,stroke:#722ed1
+</pre></div></div></div>
+
+<div class="card" id="s17"><div class="card-hd"><div class="card-num green-bg">十七</div><h2>反馈学习与持续优化闭环</h2><span class="card-badge badge-new">V1.7新增</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph COLLECT["反馈收集"]
+        FB1["👍用户点赞/点踩"];FB2["✏️人工修正 风险等级·建议"];FB3["📋复查反馈 准确率·有效性"];FB4["🔍幻觉抽检 ≥10%人工复核"]
+    end
+    subgraph ANALYZE["分析归类"]
+        AN1["短期:Prompt调优·规则更新·口径修正"];AN2["中期:微调样本积累·benchmark更新"];AN3["长期:权重校准·贝叶斯先验·模型迭代"]
+    end
+    subgraph EXECUTE["执行闭环"]
+        EX1["Prompt:灰度→全量→回滚"];EX2["指标字典:审批→发布"];EX3["规则库:测试→审批→上线"];EX4["模型:评测门禁→灰度→全量"];EX5["权重:回测→专家评审→生效"]
+    end
+    COLLECT-->ANALYZE-->EXECUTE;EXECUTE-.->|"效果监控"|COLLECT
+    style COLLECT fill:#fff0f6,stroke:#eb2f96,stroke-width:2px
+    style ANALYZE fill:#f5edff,stroke:#722ed1,stroke-width:2px
+    style EXECUTE fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+</pre></div></div></div>
+
+<div class="card" id="s18"><div class="card-hd"><div class="card-num slate-bg">十八</div><h2>LLM 私有化部署与模型分级方案</h2><span class="card-badge badge-new">V1.7新增</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph STRATEGY["部署策略"]
+        S1["🏢 私有化部署 vLLM/TGI<br/>数据不出域·可审计<br/>→敏感数据首选"]
+        S2["☁️ 专有云API 弹性好<br/>需合同+安全评估<br/>→试点/非敏感"]
+        S3["🌐 公有API 能力强<br/>合规风险高<br/>→不建议生产"]
+    end
+    subgraph TIER["模型分级"]
+        T1["L1 7B-14B: 意图·路由"];T2["L2 14B-32B: NL2SQL·Schema Linking"]
+        T3["L3 32B-70B: 画像解释·报告"];T4["L4 70B+: 复杂归因·异步+复核"]
+        T5["Embedding: BGE-M3·bge-reranker·M3E 固定版本"]
+    end
+    subgraph GPU["GPU估算"]
+        G1["MVP: A100 40G×2-4"];G2["区域: A100 80G×4-8"];G3["生产: A100/H800×8+"]
+    end
+    subgraph GOV_LLM["模型治理"]
+        GL1["版本登记"];GL2["灰度发布"];GL3["回滚"];GL4["评测门禁"];GL5["推理审计"]
+    end
+    STRATEGY-->TIER-->GPU-->GOV_LLM
+    style STRATEGY fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px
+    style TIER fill:#f5edff,stroke:#722ed1,stroke-width:2px
+    style GPU fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style GOV_LLM fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+</pre></div></div></div>
+
+<div class="card" id="s19"><div class="card-hd"><div class="card-num slate-bg">十九</div><h2>物理部署架构与高可用设计</h2><span class="card-badge badge-new">V1.7新增</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph USER_Z["用户访问区"]
+        WEB2["Web/移动端/微信/大屏"]
+    end
+    subgraph APP_Z["K8s应用区 RTO≤15min"]
+        GW["API Gateway+WAF"]
+        SVCS["auth-scope | metric-semantic | nl2sql | profile<br/>agent-orchestrator | prompt | rag | work-order<br/>feedback | report | ops-audit"]
+    end
+    subgraph DATA_Z["数据中间件集群（HA）"]
+        MYSQL2["MySQL MGR RTO≤30min RPO≤5min"];REDIS2["Redis Cluster RTO≤10min"]
+        NEO4J2["Neo4j Causal RTO≤1h"];MILVUS2["Milvus集群 RTO≤1h"]
+        TSDB2["时序库"];MQ2["Kafka RTO≤15min"]
+    end
+    subgraph GPU_Z["GPU推理 RTO≤30min"]
+        LLM2["LLM推理 vLLM/TGI"];EMB2["Embedding"]
+    end
+    subgraph OPS_Z["运维观测"]
+        LOG2["日志·监控"];TRACE2["链路追踪"];BACKUP2["备份·灾备"]
+    end
+    USER_Z-->APP_Z-->DATA_Z;APP_Z-->GPU_Z;DATA_Z&GPU_Z-->OPS_Z
+    style USER_Z fill:#fff0f6,stroke:#eb2f96,stroke-width:2px
+    style APP_Z fill:#e8f4fd,stroke:#3b7ddd,stroke-width:2px
+    style DATA_Z fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style GPU_Z fill:#f5edff,stroke:#722ed1,stroke-width:2px
+    style OPS_Z fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+</pre></div></div></div>
+
+<div class="card" id="s20"><div class="card-hd"><div class="card-num blue-bg">二十</div><h2>核心数据模型 ER 图</h2><span class="card-badge badge-code">数据模型</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+erDiagram
+    PROJECT ||--o{ WORKER : "在册工人"
+    PROJECT ||--o{ SUBCONTRACTOR : "参建分包商"
+    SUBCONTRACTOR ||--o{ WORKER : "雇佣"
+    PROJECT ||--o{ HAZARD : "存在隐患"
+    PROJECT ||--o{ EQUIPMENT : "拥有设备"
+    PROJECT ||--o{ WORK_ORDER : "产生工单"
+    WORKER ||--o{ WORKER_PROFILE : "拥有画像"
+    PROJECT ||--o{ PROJECT_PROFILE : "拥有画像"
+    SUBCONTRACTOR ||--o{ SUBCONTRACTOR_PROFILE : "拥有画像"
+    HAZARD ||--o{ WORK_ORDER : "触发工单"
+    EQUIPMENT ||--o{ WORK_ORDER : "触发工单"
+    AGENT_TASK ||--o{ WORK_ORDER : "建议工单"
+    AGENT_TASK ||--o{ AGENT_FEEDBACK : "收到反馈"
+    METRIC_DICTIONARY ||--o{ PROFILE_CALC_DETAIL : "解释指标"
+    STRONG_RULE ||--o{ RULE_TRIGGER_LOG : "触发日志"
+    RULE_TRIGGER_LOG ||--o{ WORK_ORDER : "创建工单"
+    PROJECT {
+        string tenant_id;string org_path;string project_id PK;string project_name
+    }
+    WORKER {
+        string tenant_id;string org_path;string worker_id PK;string subcontractor_id FK;string project_id FK
+    }
+    SUBCONTRACTOR {
+        string tenant_id;string org_path;string subcontractor_id PK;string subcontractor_name
+    }
+    PROJECT_PROFILE {bigint id PK;string project_id FK;date calc_date;decimal total_risk_score;string risk_level;string confidence_level}
+    WORK_ORDER {string work_order_id PK;string tenant_id;string project_id;string status;int escalation_level}
+    AGENT_TASK {string task_id PK;string tenant_id;string task_type;string status;string prompt_version}
+    STRONG_RULE {string rule_id PK;string rule_name;string object_type;string severity}
+</pre></div></div></div>
+
+<div class="card" id="s21"><div class="card-hd"><div class="card-num slate-bg">二一</div><h2>研发任务拆解与代码实施基线 — 12个微服务</h2><span class="card-badge badge-code">工程实施</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph P0["P0 · MVP必做（6项）"]
+        P0A["auth-scope-service<br/>统一认证·data_scope注入"];P0B["metric-semantic-service<br/>指标字典·Schema Linking"]
+        P0C["profile-service<br/>三类画像·动态修正·强规则"];P0D["rule-engine-service<br/>强规则配置·触发·日志"]
+        P0E["work-order-service<br/>工单CRUD·状态机·Webhook"];P0F["agent-orchestrator<br/>主控Agent·DAG·Checkpoint·仲裁"]
+    end
+    subgraph P1["P1 · 一期增强（6项）"]
+        P1A["nl2sql-service<br/>意图·SQL生成·AST审计"];P1B["rag-knowledge-service<br/>知识入库·双路检索·Rerank"]
+        P1C["prompt-service<br/>模板·版本·灰度·回滾"];P1D["feedback-service<br/>点赞/点踩·人工修正"]
+        P1E["report-service<br/>周报·评价·引用校验"];P1F["ops-audit-service<br/>日志·链路·模型审计"]
+    end
+    subgraph P2["P2 · 二期扩展"]
+        P2A["BIM风险热力图"];P2B["移动端离线暂存"];P2C["贝叶斯归因"]
+    end
+    subgraph TESTS["测试基线 · 5类测试集"]
+        T1["权限50+"];T2["NL2SQL 100+"];T3["画像算法100+"];T4["Agent安全80+"];T5["RAG评测100+"]
+    end
+    subgraph GATE["代码门禁"]
+        G1["所有DB查询含租户│组织域过滤"];G2["Agent输出含evidence引用"]
+        G3["高风险结论含confidence+人工复核"];G4["Prompt/规则/权重有版本·可回滚"]
+    end
+    P0-->P1-->P2;P0&P1-->TESTS-->GATE
+    style P0 fill:#fff0f0,stroke:#f5222d,stroke-width:2px
+    style P1 fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style P2 fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px
+    style TESTS fill:#f5edff,stroke:#722ed1,stroke-width:2px
+    style GATE fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+</pre></div></div></div>
+
+<div class="card" id="s22"><div class="card-hd"><div class="card-num cyan-bg">二二</div><h2>数据质量治理六维评估与缺失处理机制</h2><span class="card-badge badge-core">核心</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    subgraph DQ2["数据质量六维评估"]
+        DQ1["完整性:必填字段缺失率"];DQ2D["准确性:业务逻辑校验"];DQ3["时效性:SLA监控"]
+        DQ4["一致性:跨系统主数据"];DQ5["唯一性:重复记录"];DQ6["可追溯性:来源溯源"]
+    end
+    subgraph MISSING["缺失处理策略"]
+        MS1["维度无数据→权重重分配"];MS2["关键缺失→低置信度+人工复核"];MS3["工人<7天→仅观察标签"]
+        MS4["新分包商→基准+当前表现"];MS5["IoT中断→质量告警"];MS6["上游延迟→快照+stale"]
+    end
+    subgraph ALERT_Q["质量告警触发"]
+        QA1["同步失败×3→通知"];QA2["缺失>10%→暂停预警"];QA3["IoT中断>30min→告警"];QA4["置信度低→人工确认"]
+    end
+    subgraph OUTPUT2["画像输出必含"]
+        O1_["风险分+等级"];O2_["完整度+置信度"];O3_["缺失说明"];O4_["是否建议人工复核"]
+    end
+    DQ2-->MISSING-->ALERT_Q;MISSING-->OUTPUT2
+    style DQ2 fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px
+    style MISSING fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style ALERT_Q fill:#fff0f0,stroke:#f5222d,stroke-width:2px
+    style OUTPUT2 fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+</pre></div></div></div>
+
+<div class="card" id="s23"><div class="card-hd"><div class="card-num teal-bg">二三</div><h2>技术栈全景图</h2><span class="card-badge badge-up">V1.7更新</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart LR
+    subgraph AI2["🤖 AI/ML"]
+        AI1_["LLM Qwen·DeepSeek·GLM<br/>vLLM/TGI/Triton"];AI2_["NL2SQL SQLCoder·微调"];AI3_["Embedding BGE-M3·reranker"]
+    end
+    subgraph AGT2["🧭 Agent框架"]
+        AF1_["LangGraph Checkpoint"];AF2_["LangChain 工具链"];AF3_["FastAPI 自研微服务"]
+    end
+    subgraph DATA3["💾 数据存储"]
+        DS1_["MySQL 8.0 MGR"];DS2_["Neo4j 5.x Causal"];DS3_["Milvus 2.4+ Cluster"];DS4_["Redis 7.x"];DS5_["TDengine"]
+    end
+    subgraph INFRA2["⚙️ 基础设施"]
+        IF1_["Airflow 调度"];IF2_["Kafka/RocketMQ"];IF3_["Drools/自研规则"];IF4_["K8s 容器编排"]
+    end
+    subgraph VIS2["🎨 可视化"]
+        VS1_["Vue3"];VS2_["ECharts"];VS3_["FineBI/Superset"]
+    end
+    AI2-->AGT2-->DATA3-->INFRA2-->VIS2
+    style AI2 fill:#f5edff,stroke:#722ed1,stroke-width:2px
+    style AGT2 fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px
+    style DATA3 fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+    style INFRA2 fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style VIS2 fill:#fff0f6,stroke:#eb2f96,stroke-width:2px
+</pre></div></div></div>
+
+<div class="card" id="s24"><div class="card-hd"><div class="card-num primary-bg">二四</div><h2>平台全景一张图（Summary）</h2><span class="card-badge badge-core">总览</span></div><div class="card-body"><div class="mermaid-wrap"><pre class="mermaid">
+flowchart TB
+    CENTER["🏗️ 中建集团项目工地安全智能平台 V1.7<br/><br/>风险分 = min(100, Σ(维度×W)×min(1.50, 1.00+ΣΔ) + 强规则触发分)<br/><br/>人·机·环·管·投入·进度·应急 — 12系统·5模式<br/>2000+项目 | 50万+工人 | 5000+分包商 | 年300万+隐患<br/><br/>Agent记忆: L1会话→L2任务→L3语义→L4事实<br/>12微服务: P0(6)+P1(6)+P2(3) · 5类测试集"]
+    subgraph LEFT2["← 上游数据源与治理"]
+        L1_["12个上游系统 5种集成模式<br/>API/MQ/文件/IoT/Webhook"];L2_["统一ID·主数据归属·6维质量<br/>多租户: tenant_id+org_path行级过滤"]
+    end
+    subgraph RIGHT2["→ 下游应用与闭环"]
+        R1_["Web·移动端·微信·大屏"];R2_["三类画像·智能问数·隐患整改<br/>报告·培训·预警·工单"]
+        R3_["7类工单闭环+3级超时升级<br/>OpenAPI+Webhook+OA联动"]
+    end
+    subgraph BOTTOM2["↓ 技术底座"]
+        B1_["四库协同+时序库+最终一致性"];B2_["指标语义层+NL2SQL 8步链路"]
+        B3_["多Agent:主控DAG+6核心+7工具+记忆+仲裁"];B4_["Prompt工程·LLM私有化·K8s部署·GPU"]
+    end
+    subgraph TOP2["↑ 治理与安全"]
+        T1_["强规则30+·红线不可被LLM覆盖"];T2_["3层安全防护·Agent攻防"]
+        T3_["反馈学习·持续优化"];T4_["事故案例库·回测·贝叶斯"];T5_["模型治理·偏差·审计·合规"]
+    end
+    LEFT2-->CENTER;RIGHT2-->CENTER;BOTTOM2-->CENTER;CENTER-->TOP2
+    style CENTER fill:#0d2137,color:#fff,stroke:#0d2137,stroke-width:4px
+    style LEFT2 fill:#e6f0ff,stroke:#3b7ddd,stroke-width:2px
+    style RIGHT2 fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+    style BOTTOM2 fill:#f5edff,stroke:#722ed1,stroke-width:2px
+    style TOP2 fill:#f0ffe6,stroke:#52c41a,stroke-width:2px
+</pre></div></div></div>
+
+</div>
+<div class="ft"><p>中建集团项目工地安全智能平台 · 技术开发文档 V1.7 · 2026年6月 · 详细框架逻辑图</p></div>
+</div>
+
+<script>
+(function loadMermaid(){
+  var urls=[
+    'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js',
+    'https://unpkg.com/mermaid@10/dist/mermaid.min.js',
+    'https://registry.npmmirror.com/mermaid/10.9.0/files/dist/mermaid.min.js'
+  ];
+  var idx=0;
+  function tryNext(){
+    if(idx>=urls.length){ showError(); return; }
+    var s=document.createElement('script');
+    s.src=urls[idx];s.onload=init;s.onerror=function(){idx++;tryNext();};
+    document.head.appendChild(s);
+  }
+  function init(){
+    document.getElementById('loading-msg').style.display='none';
+    document.getElementById('main-content').style.display='block';
+    mermaid.initialize({startOnLoad:true,theme:'base',
+      themeVariables:{fontFamily:'"Microsoft YaHei","PingFang SC","Helvetica Neue",sans-serif',fontSize:'16px',primaryColor:'#e6f0ff',primaryBorderColor:'#3b7ddd',primaryTextColor:'#1e293b',lineColor:'#a0b4c8'},
+      flowchart:{useMaxWidth:true,htmlLabels:true,curve:'basis',padding:20},er:{useMaxWidth:true}});
+  }
+  function showError(){
+    document.getElementById('loading-msg').style.display='none';
+    document.getElementById('cdn-error').style.display='block';
+    document.getElementById('main-content').style.display='block';
+  }
+  tryNext();
+})();
+</script>
+</body>
+</html>

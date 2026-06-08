@@ -12,6 +12,7 @@ from app.domain.bayesian.l3_inference import run_l3_attribution
 from app.schemas.bayesian import AttributionRequest
 from app.services.bayesian.gate import L3_MIN_CASES, count_active_accident_cases
 from app.domain.bayesian.cpt import cpt_learned_available
+from app.services.bayesian.graph_evidence import collect_graph_supplemental_evidence
 from app.services.profiles.service import (
     get_project_profile,
     get_subcontractor_profile,
@@ -88,6 +89,12 @@ def analyze_attribution(
         )
 
     if model_level == "L3":
+        graph_boosts, graph_records, neo4j_status = collect_graph_supplemental_evidence(
+            project_id=request.project_id,
+            worker_id=request.worker_id,
+            subcontractor_id=request.subcontractor_id,
+            current_user=current_user,
+        )
         result = run_l3_attribution(
             project_id=request.project_id,
             project_profile=project_profile,
@@ -96,6 +103,9 @@ def analyze_attribution(
             worker_id=request.worker_id,
             subcontractor_id=request.subcontractor_id,
             accident_type=request.accident_type,
+            graph_factor_boosts=graph_boosts,
+            graph_supplemental_evidence=graph_records,
+            neo4j_evidence_status=neo4j_status,
         )
     else:
         result = run_l2_attribution(

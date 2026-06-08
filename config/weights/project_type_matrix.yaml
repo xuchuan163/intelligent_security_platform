@@ -1,0 +1,43 @@
+# 项目类型差异化权重矩阵（对齐技术文档 V1.7 §7.5）
+# 系数作用于画像简化公式中的分项：高危作业(隐患)、设备机械、进度压力
+
+version: "1.0.0"
+effective_from: "2026-06-03"
+default_type: housing
+
+project_types:
+  housing:
+    label: 房建
+    coefficients:
+      high_risk_operation: 1.15
+      equipment_machinery: 1.10
+      environment_monitoring: 0.90
+      schedule_pressure: 1.00
+      subcontractor_transmission: 1.10
+
+  municipal:
+    label: 市政
+    coefficients:
+      high_risk_operation: 1.00
+      equipment_machinery: 0.95
+      environment_monitoring: 1.20
+      schedule_pressure: 1.00
+      subcontractor_transmission: 1.00
+
+  infrastructure:
+    label: 基建
+    coefficients:
+      high_risk_operation: 1.10
+      equipment_machinery: 1.15
+      environment_monitoring: 1.25
+      schedule_pressure: 1.10
+      subcontractor_transmission: 1.00
+
+  mep:
+    label: 机电安装
+    coefficients:
+      high_risk_operation: 1.15
+      equipment_machinery: 1.10
+      environment_monitoring: 0.90
+      schedule_pressure: 1.00
+      subcontractor_transmission: 0.95

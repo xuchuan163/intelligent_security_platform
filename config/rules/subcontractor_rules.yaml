@@ -1,0 +1,51 @@
+rules:
+  - rule_id: SR-SUB-004
+    object_type: subcontractor
+    rule_name: 重大隐患超期未整改
+    severity: high
+    risk_tag: 重大隐患超期未整改
+    condition:
+      field: major_hazard_overdue_count
+      operator: ">"
+      value: 0
+    action:
+      risk_bonus: 20
+      suggested_work_order_type: hazard_rectification
+      work_order_title_template: 分包商{object_id}重大隐患超期整改
+      work_order_priority: high
+      auto_create_work_order: true
+
+  - rule_id: SR-SUB-001
+    object_type: subcontractor
+    rule_name: 安全生产许可证异常
+    severity: critical
+    risk_tag: 安全生产许可证异常
+    condition:
+      field: safety_license_status
+      operator: in
+      value:
+        - expired
+        - suspended
+        - missing
+    action:
+      risk_bonus: 30
+      suggested_work_order_type: qualification_review
+      work_order_title_template: 分包商{object_id}安全生产许可证复核
+      work_order_priority: urgent
+      auto_create_work_order: true
+
+  - rule_id: SR-SUB-002
+    object_type: subcontractor
+    rule_name: 存在历史事故
+    severity: medium
+    risk_tag: 存在历史事故
+    condition:
+      field: accident_history_count
+      operator: ">"
+      value: 0
+    action:
+      risk_bonus: 15
+      suggested_work_order_type: safety_review
+      work_order_title_template: 分包商{object_id}历史事故安全复核
+      work_order_priority: normal
+      auto_create_work_order: false

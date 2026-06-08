@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中建智慧安全平台 — 交互式项目架构全景图</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#0b1120; --panel:#151e32; --text:#e2e8f0; --muted:#94a3b8;
+    --ext:#3b82f6; --store:#f59e0b; --infra:#ec4899; --core:#6366f1;
+    --schema:#a855f7; --domain:#22c55e; --svc:#f97316; --api:#14b8a6; --fe:#ef4444;
+    --line:rgba(148,163,184,0.25); --active-line:#38bdf8;
+  }
+  html,body { width:100%; height:100%; overflow:hidden; font-family:'Microsoft YaHei','PingFang SC',system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); }
+
+  /* 顶部工具栏 */
+  .toolbar { position:fixed; top:0; left:0; right:0; height:56px; background:rgba(11,17,32,0.92); backdrop-filter:blur(16px); border-bottom:1px solid rgba(148,163,184,0.12); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:1000; }
+  .toolbar h1 { font-size:16px; font-weight:700; display:flex; align-items:center; gap:10px; letter-spacing:0.3px; }
+  .toolbar h1 .dot { width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px #22c55e; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  .toolbar .controls { display:flex; gap:8px; align-items:center; }
+  .toolbar button { background:rgba(148,163,184,0.1); border:1px solid rgba(148,163,184,0.2); color:var(--text); padding:6px 14px; border-radius:8px; cursor:pointer; font-size:12.5px; transition:all .18s; display:flex; align-items:center; gap:5px; }
+  .toolbar button:hover { background:rgba(148,163,184,0.2); border-color:rgba(148,163,184,0.35); }
+  .toolbar button.active { background:rgba(56,189,248,0.15); border-color:#38bdf8; color:#38bdf8; }
+  .zoom-display { font-size:12px; color:var(--muted); min-width:50px; text-align:center; font-variant-numeric:tabular-nums; }
+
+  /* 左侧面板 */
+  .sidebar-left { position:fixed; left:16px; top:72px; width:200px; background:var(--panel); border:1px solid rgba(148,163,184,0.1); border-radius:14px; padding:16px; z-index:999; max-height:calc(100vh - 100px); overflow-y:auto; }
+  .sidebar-left h3 { font-size:12.5px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; font-weight:600; }
+  .legend-item { display:flex; align-items:center; gap:10px; padding:7px 8px; border-radius:8px; cursor:pointer; transition:background .15s; margin-bottom:2px; font-size:12.5px; }
+  .legend-item:hover { background:rgba(148,163,184,0.08); }
+  .legend-item.hidden { opacity:0.4; }
+  .legend-color { width:14px; height:14px; border-radius:4px; flex-shrink:0; border:2px solid transparent; }
+
+  /* 右侧面板 */
+  .sidebar-right { position:fixed; right:-420px; top:56px; width:400px; height:calc(100vh - 56px); background:var(--panel); border-left:1px solid rgba(148,163,184,0.1); z-index:998; transition:right .35s cubic-bezier(.4,0,.2,1); overflow-y:auto; padding:24px; }
+  .sidebar-right.open { right:0; }
+  .sidebar-right .close-btn { position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:8px; background:rgba(148,163,184,0.1); border:1px solid rgba(148,163,184,0.15); color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:all .15s; }
+  .sidebar-right .close-btn:hover { background:rgba(148,163,184,0.2); }
+  .detail-header { padding-bottom:16px; border-bottom:1px solid rgba(148,163,184,0.1); margin-bottom:16px; }
+  .detail-tag { display:inline-block; padding:3px 10px; border-radius:6px; font-size:11px; font-weight:600; margin-bottom:10px; }
+  .detail-title { font-size:18px; font-weight:700; margin-bottom:6px; }
+  .detail-desc { font-size:13px; color:var(--muted); line-height:1.6; }
+  .detail-section { margin-top:20px; }
+  .detail-section h4 { font-size:12.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:10px; font-weight:600; }
+  .detail-list { list-style:none; }
+  .detail-list li { padding:8px 12px; background:rgba(148,163,184,0.05); border-radius:8px; margin-bottom:6px; font-size:12.5px; line-height:1.5; border-left:3px solid transparent; transition:background .15s; }
+  .detail-list li:hover { background:rgba(148,163,184,0.1); }
+
+  /* 视口和画布 */
+  .viewport { position:fixed; top:56px; left:0; right:0; bottom:0; overflow:hidden; cursor:grab; background: radial-gradient(circle at 1px 1px, rgba(148,163,184,0.07) 1px, transparent 0); background-size:24px 24px; }
+  .viewport.grabbing { cursor:grabbing; }
+  .canvas { position:absolute; top:0; left:0; transform-origin:0 0; padding:60px 80px; min-width:100%; min-height:100%; }
+
+  /* SVG连线层 */
+  .connections { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1; }
+  .conn-path { fill:none; stroke-width:1.5; opacity:0.35; transition:all .3s; }
+  .conn-path.highlight { stroke-width:2.5; opacity:0.9; filter:drop-shadow(0 0 3px currentColor); }
+  .conn-path.dim { opacity:0.08; }
+  .conn-label { font-size:10px; fill:var(--muted); opacity:0.5; text-anchor:middle; pointer-events:none; }
+
+  /* 层 */
+  .layer { position:relative; z-index:2; margin-bottom:44px; display:flex; flex-direction:column; align-items:center; }
+  .layer-title { font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:14px; padding:4px 16px; border-radius:20px; background:rgba(148,163,184,0.06); border:1px solid rgba(148,163,184,0.08); }
+  .layer-nodes { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; max-width:1500px; }
+
+  /* 节点 */
+  .node { background:var(--panel); border:1.5px solid rgba(148,163,184,0.15); border-radius:12px; padding:10px 16px; font-size:12px; font-weight:500; cursor:pointer; transition:all .2s cubic-bezier(.4,0,.2,1); position:relative; box-shadow:0 2px 8px rgba(0,0,0,0.2); min-width:130px; text-align:center; user-select:none; }
+  .node:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,0.35); border-color:rgba(148,163,184,0.3); z-index:10; }
+  .node.active { transform:translateY(-3px) scale(1.05); box-shadow:0 12px 32px rgba(0,0,0,0.4); z-index:20; }
+  .node.dim { opacity:0.2; }
+  .node .node-icon { font-size:15px; margin-bottom:3px; display:block; }
+  .node .node-label { display:block; line-height:1.35; }
+  .node .node-sub { font-size:10px; color:var(--muted); margin-top:2px; display:block; line-height:1.3; }
+
+  /* 层颜色 */
+  .layer-external .node { border-color:rgba(59,130,246,0.3); background:rgba(59,130,246,0.07); }
+  .layer-external .node:hover, .layer-external .node.active { border-color:#3b82f6; background:rgba(59,130,246,0.14); }
+  .layer-store .node { border-color:rgba(245,158,11,0.3); background:rgba(245,158,11,0.07); }
+  .layer-store .node:hover, .layer-store .node.active { border-color:#f59e0b; background:rgba(245,158,11,0.14); }
+  .layer-infra .node { border-color:rgba(236,72,153,0.3); background:rgba(236,72,153,0.07); }
+  .layer-infra .node:hover, .layer-infra .node.active { border-color:#ec4899; background:rgba(236,72,153,0.14); }
+  .layer-core .node { border-color:rgba(99,102,241,0.3); background:rgba(99,102,241,0.07); }
+  .layer-core .node:hover, .layer-core .node.active { border-color:#6366f1; background:rgba(99,102,241,0.14); }
+  .layer-schema .node { border-color:rgba(168,85,247,0.3); background:rgba(168,85,247,0.07); }
+  .layer-schema .node:hover, .layer-schema .node.active { border-color:#a855f7; background:rgba(168,85,247,0.14); }
+  .layer-domain .node { border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.07); }
+  .layer-domain .node:hover, .layer-domain .node.active { border-color:#22c55e; background:rgba(34,197,94,0.14); }
+  .layer-service .node { border-color:rgba(249,115,22,0.3); background:rgba(249,115,22,0.07); }
+  .layer-service .node:hover, .layer-service .node.active { border-color:#f97316; background:rgba(249,115,22,0.14); }
+  .layer-api .node { border-color:rgba(20,184,166,0.3); background:rgba(20,184,166,0.07); }
+  .layer-api .node:hover, .layer-api .node.active { border-color:#14b8a6; background:rgba(20,184,166,0.14); }
+  .layer-frontend .node { border-color:rgba(239,68,68,0.3); background:rgba(239,68,68,0.07); }
+  .layer-frontend .node:hover, .layer-frontend .node.active { border-color:#ef4444; background:rgba(239,68,68,0.14); }
+
+  .hint { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:rgba(11,17,32,0.9); border:1px solid rgba(148,163,184,0.15); padding:8px 20px; border-radius:20px; font-size:11.5px; color:var(--muted); z-index:1000; pointer-events:none; }
+
+  @media (max-width:768px) {
+    .sidebar-left { display:none; }
+    .sidebar-right { width:100%; right:-100%; }
+    .toolbar h1 { font-size:13px; }
+  }
+  @media print { .sidebar-left,.sidebar-right,.toolbar,.hint { display:none; } .viewport { position:static; overflow:visible; } .canvas { transform:none !important; } }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1><span class="dot"></span> 中建智慧安全平台 — 交互式项目架构全景图</h1>
+  <div class="controls">
+    <button onclick="fitToScreen()" title="适应屏幕">⛶ 适应屏幕</button>
+    <button onclick="resetView()" title="重置视图">⌂ 重置</button>
+    <button onclick="zoomOut()">−</button>
+    <span class="zoom-display" id="zoomDisplay">100%</span>
+    <button onclick="zoomIn()">+</button>
+    <button onclick="toggleHelp()" id="helpBtn">❓ 帮助</button>
+  </div>
+</div>
+
+<div class="sidebar-left" id="legendPanel">
+  <h3>架构层级</h3>
+  <div id="legendList"></div>
+  <h3 style="margin-top:20px">统计</h3>
+  <div style="font-size:12px;color:var(--muted);line-height:1.8">
+    <div>外部系统：<b style="color:var(--ext)">12</b></div>
+    <div>数据库表：<b style="color:var(--store)">25+</b></div>
+    <div>API端点：<b style="color:var(--api)">18</b></div>
+    <div>服务模块：<b style="color:var(--svc)">16</b></div>
+    <div>前端页面：<b style="color:var(--fe)">14</b></div>
+    <div>Agent模块：<b style="color:var(--svc)">8</b></div>
+  </div>
+</div>
+
+<div class="sidebar-right" id="detailPanel">
+  <button class="close-btn" onclick="closeDetail()">×</button>
+  <div id="detailContent"></div>
+</div>
+
+<div class="viewport" id="viewport">
+  <div class="canvas" id="canvas">
+    <svg class="connections" id="connections"><defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(148,163,184,0.4)"/></marker>
+    </defs></svg>
+    <div id="layersContainer"></div>
+  </div>
+</div>
+
+<div class="hint" id="hint">滚轮缩放 · 拖拽平移 · 点击节点查看详情 · 快捷键: +/- 缩放 · 0 重置 · F 适应屏幕 · Esc 关闭面板</div>
+
+<script>
+// ==================== 数据定义 ====================
+const architectureData = {
+  layers: [
+    {
+      id: 'external', name: '外部系统集成', color: '#3b82f6',
+      nodes: [
+        { id:'ext_realname', icon:'👷', label:'劳务实名制', sub:'API/视图 T+0/T+1' },
+        { id:'ext_hazard', icon:'⚠️', label:'隐患管理', sub:'API/MQ T+0 实时' },
+        { id:'ext_smartsite', icon:'🏗️', label:'智慧工地', sub:'IoT/MQ 实时/5min' },
+        { id:'ext_video', icon:'📹', label:'视频监控', sub:'CV事件 实时' },
+        { id:'ext_equip', icon:'⚙️', label:'特种设备', sub:'API T+1' },
+        { id:'ext_schedule', icon:'📅', label:'进度/BIM', sub:'API/文件 T+1' },
+        { id:'ext_finance', icon:'💰', label:'财务/成本', sub:'API/DW T+1/T+7' },
+        { id:'ext_oa', icon:'📋', label:'OA/审批', sub:'Webhook T+0' },
+        { id:'ext_emergency', icon:'🚨', label:'应急管理', sub:'API T+1' },
+        { id:'ext_accident', icon:'📁', label:'事故管理', sub:'API/结构化导入' },
+        { id:'ext_material', icon:'📦', label:'物资采购', sub:'API T+1' },
+        { id:'ext_qwen', icon:'🤖', label:'阿里云Qwen', sub:'LLM API' }
+      ]
+    },
+    {
+      id: 'store', name: '数据存储层', color: '#f59e0b',
+      nodes: [
+        { id:'db_mysql', icon:'🗄️', label:'MySQL 8.0', sub:'25+核心表·结构化事实主库' },
+        { id:'db_redis', icon:'⚡', label:'Redis 7.x', sub:'缓存·会话·Checkpoint' },
+        { id:'db_milvus', icon:'🔍', label:'Milvus 2.4+', sub:'向量知识库·RAG' },
+        { id:'db_neo4j', icon:'🕸️', label:'Neo4j 5.x', sub:'安全关系图谱' },
+        { id:'db_local', icon:'💾', label:'本地文件存储', sub:'附件·报告·导入模板' }
+      ]
+    },
+    {
+      id: 'infra', name: '基础设施层', color: '#ec4899',
+      nodes: [
+        { id:'infra_db', icon:'🔌', label:'database/session', sub:'SQLAlchemy 2.0·Session注入' },
+        { id:'infra_cache', icon:'📦', label:'cache', sub:'Redis画像缓存读写' },
+        { id:'infra_redis', icon:'📡', label:'redis_client', sub:'Redis连接封装' },
+        { id:'infra_milvus', icon:'🔎', label:'milvus_client', sub:'向量库客户端(可选)' },
+        { id:'infra_neo4j', icon:'🔗', label:'neo4j_client', sub:'图数据库客户端(可选)' },
+        { id:'infra_llm', icon:'🧠', label:'llm/qwen_client', sub:'Qwen API封装' },
+        { id:'infra_storage', icon:'📂', label:'storage/local_files', sub:'本地文件存储' }
+      ]
+    },
+    {
+      id: 'core', name: 'Core 核心层', color: '#6366f1',
+      nodes: [
+        { id:'core_config', icon:'⚙️', label:'config.py', sub:'Pydantic Settings统一配置' },
+        { id:'core_errors', icon:'🛡️', label:'errors.py', sub:'全局异常·统一错误响应' },
+        { id:'core_resp', icon:'✅', label:'responses.py', sub:'统一成功响应包装' },
+        { id:'core_security', icon:'🔐', label:'security.py', sub:'MockUser·JWT·data_scope' },
+        { id:'core_perm', icon:'🔑', label:'permissions.py', sub:'权限辅助函数' },
+        { id:'core_rbac', icon:'👤', label:'rbac.py', sub:'RBAC角色权限定义' }
+      ]
+    },
+    {
+      id: 'schema', name: 'Schemas 契约层', color: '#a855f7',
+      nodes: [
+        { id:'sch_agent', icon:'📋', label:'agent.py', sub:'Agent ask/DAG/审批/反馈' },
+        { id:'sch_profiles', icon:'📋', label:'profiles.py', sub:'画像查询/重算Schema' },
+        { id:'sch_workorders', icon:'📋', label:'work_orders.py', sub:'工单创建/状态更新' },
+        { id:'sch_auth', icon:'📋', label:'auth.py', sub:'登录/Token/用户Schema' },
+        { id:'sch_hazards', icon:'📋', label:'hazards.py', sub:'隐患Schema' },
+        { id:'sch_metrics', icon:'📋', label:'metrics.py', sub:'指标目录Schema' },
+        { id:'sch_nl2sql', icon:'📋', label:'nl2sql.py', sub:'NL2SQL查询Schema' },
+        { id:'sch_cases', icon:'📋', label:'cases.py', sub:'事故案例Schema' },
+        { id:'sch_common', icon:'📋', label:'common.py', sub:'通用分页/列表Schema' }
+      ]
+    },
+    {
+      id: 'domain', name: 'Domain 领域层', color: '#22c55e',
+      nodes: [
+        { id:'dom_risk', icon:'📐', label:'risk.py', sub:'风险分计算: base×dynamic+rule' },
+        { id:'dom_workflow', icon:'📐', label:'work_orders.py', sub:'工单状态机·7状态转换' },
+        { id:'dom_dynamic', icon:'📐', label:'dynamic_factors.py', sub:'动态因子评估' },
+        { id:'dom_weights', icon:'📐', label:'weights.py', sub:'项目类型权重矩阵' },
+        { id:'dom_hazwf', icon:'📐', label:'hazard_workflow.py', sub:'隐患岗位流转规则' },
+        { id:'dom_rbac', icon:'📐', label:'rbac.py', sub:'RBAC领域规则' }
+      ]
+    },
+    {
+      id: 'service', name: 'Services 业务服务层', color: '#f97316',
+      nodes: [
+        { id:'svc_agents', icon:'🤖', label:'agents/', sub:'8模块:router·DAG·审批·工具·Prompt' },
+        { id:'svc_profiles', icon:'📊', label:'profiles/', sub:'calculator·service·缓存·排名' },
+        { id:'svc_workorders', icon:'📝', label:'work_orders/', sub:'service·workflow·状态机驱动' },
+        { id:'svc_rules', icon:'⚡', label:'rules/', sub:'engine·YAML解析·自动去重建单' },
+        { id:'svc_nl2sql', icon:'💬', label:'nl2sql/', sub:'9模块:生成·审计·执行·澄清·Benchmark' },
+        { id:'svc_rag', icon:'📚', label:'rag/', sub:'7模块:检索·灌入·分块·嵌入·关键词' },
+        { id:'svc_auth', icon:'🔒', label:'auth/', sub:'JWT·登录·OAuth·用户上下文' },
+        { id:'svc_cases', icon:'📁', label:'cases/', sub:'查询·回测·CSV导入·Milvus重灌' },
+        { id:'svc_memory', icon:'🧠', label:'memory/', sub:'会话摘要·Checkpoint·上下文解析' },
+        { id:'svc_reports', icon:'📄', label:'reports/', sub:'项目周报·分包商评价报告' },
+        { id:'svc_dashboard', icon:'📈', label:'dashboard/', sub:'聚合统计·风险排名TOP10' },
+        { id:'svc_webhooks', icon:'🔔', label:'webhooks/', sub:'调度发送·企业微信·投递日志' },
+        { id:'svc_graph', icon:'🕸️', label:'graph/', sub:'邻居查询·图谱同步' },
+        { id:'svc_hazards', icon:'⚠️', label:'hazards/', sub:'隐患查询服务' },
+        { id:'svc_projects', icon:'🏗️', label:'projects/', sub:'项目列表·范围过滤' },
+        { id:'svc_scale', icon:'📉', label:'scale/', sub:'压测·连接池调优·基线报告' }
+      ]
+    },
+    {
+      id: 'api', name: 'API Endpoints 路由层', color: '#14b8a6',
+      nodes: [
+        { id:'api_auth', icon:'🔑', label:'auth', sub:'登录·JWT·OAuth·用户信息' },
+        { id:'api_profiles', icon:'📊', label:'profiles', sub:'三类画像查询·重算API' },
+        { id:'api_workorders', icon:'📝', label:'work_orders', sub:'工单CRUD·状态流转·超期升级' },
+        { id:'api_rules', icon:'⚡', label:'rules', sub:'强规则触发日志·规则列表' },
+        { id:'api_agents', icon:'🤖', label:'agent', sub:'Agent DAG·ask·审批·反馈' },
+        { id:'api_assistant', icon:'💬', label:'assistant', sub:'Qwen安全助手聊天·风险解释' },
+        { id:'api_nl2sql', icon:'🔍', label:'nl2sql', sub:'智能问数API' },
+        { id:'api_hazards', icon:'⚠️', label:'hazards', sub:'隐患上传·查询·流转' },
+        { id:'api_metrics', icon:'📐', label:'metrics', sub:'指标目录32条·详情' },
+        { id:'api_reports', icon:'📄', label:'reports', sub:'项目周报·分包商评价报告' },
+        { id:'api_cases', icon:'📁', label:'cases', sub:'事故案例库API' },
+        { id:'api_dashboard', icon:'📈', label:'dashboard', sub:'仪表盘概览·统计' },
+        { id:'api_rag', icon:'📚', label:'rag', sub:'RAG知识检索' },
+        { id:'api_memory', icon:'🧠', label:'memory', sub:'Agent会话记忆·上下文' },
+        { id:'api_webhooks', icon:'🔔', label:'webhooks', sub:'Webhook配置·投递日志' },
+        { id:'api_files', icon:'📎', label:'files', sub:'文件上传·下载·查看' },
+        { id:'api_graph', icon:'🕸️', label:'graph', sub:'图谱邻居查询' },
+        { id:'api_config', icon:'⚙️', label:'config', sub:'权重版本·动态因子配置' }
+      ]
+    },
+    {
+      id: 'frontend', name: 'Frontend 前端层', color: '#ef4444',
+      nodes: [
+        { id:'fe_login', icon:'🔐', label:'LoginPage', sub:'JWT/Mock/OAuth登录' },
+        { id:'fe_dashboard', icon:'📊', label:'DashboardPage', sub:'公司级/项目级双视图' },
+        { id:'fe_projprof', icon:'🏗️', label:'ProjectProfilePage', sub:'项目画像详情' },
+        { id:'fe_workprof', icon:'👷', label:'WorkerProfilePage', sub:'工人画像详情' },
+        { id:'fe_subprof', icon:'🏢', label:'SubcontractorProfilePage', sub:'分包商画像详情' },
+        { id:'fe_projreport', icon:'📄', label:'ProjectReportPage', sub:'项目周报' },
+        { id:'fe_subreport', icon:'📋', label:'SubcontractorReportPage', sub:'分包商评价报告' },
+        { id:'fe_metrics', icon:'📐', label:'MetricsCatalogPage', sub:'指标目录浏览' },
+        { id:'fe_rules', icon:'⚡', label:'RulesTriggersPage', sub:'规则触发日志' },
+        { id:'fe_workorders', icon:'📝', label:'WorkOrdersPage', sub:'工单列表·状态流转·详情' },
+        { id:'fe_hazard', icon:'🔧', label:'HazardRectificationPage', sub:'隐患整改Agent' },
+        { id:'fe_nl2sql', icon:'💬', label:'Nl2SqlChatPage', sub:'智能问数聊天' },
+        { id:'fe_approval', icon:'✅', label:'AgentApprovalsPage', sub:'Agent审批管理' },
+        { id:'fe_assistant', icon:'🤖', label:'AssistantPage', sub:'Qwen安全助手' }
+      ]
+    }
+  ]
+};
+
+const nodeDetails = {
+  svc_agents: {
+    tag: 'Agent 智能体体系', tagColor: '#f97316',
+    desc: '多Agent协同调度中心，包含意图路由、DAG执行、审批队列、工具注册、Prompt版本管理、反馈收集和隐患整改顾问。',
+    items: [
+      'router.py — 关键词意图分类·DAG步骤规划·敏感动作拦截',
+      'dag_executor.py — dry_run模拟·controlled_execute受控执行',
+      'approval_queue.py — 敏感操作人工审批·approve/reject/execute',
+      'tool_registry.py — 7+只读工具注册与访问控制',
+      'prompt_registry.py — Prompt版本注册与激活管理',
+      'feedback.py — 用户反馈收集与标签管理',
+      'hazard_rectification.py — 隐患整改顾问·草稿建议',
+      'safety_assistant.py — Qwen安全助手服务封装'
+    ]
+  },
+  svc_profiles: {
+    tag: '三类画像服务', tagColor: '#f97316',
+    desc: '项目/工人/分包商安全风险画像计算、查询、缓存和排名。MVP核心模块。',
+    items: [
+      'calculator.py — 纯函数计算三类画像风险分·动态修正·规则触发',
+      'service.py — 画像查询·Redis缓存·批量重算·风险排名TOP20',
+      '项目画像：9维度加权（隐患22%·高危作业16%·分包商传导14%...）',
+      '工人画像：6维度（违规35%·考核25%·资质15%·健康10%...）',
+      '分包商画像：9维度（隐患整改22%·人员管理18%·准入合规15%...）'
+    ]
+  },
+  svc_workorders: {
+    tag: '工单闭环服务', tagColor: '#f97316',
+    desc: '安全工单全生命周期管理，支持状态机驱动流转和隐患岗位流转。',
+    items: [
+      'service.py — 工单CRUD·状态机驱动流转·超期升级扫描',
+      'workflow.py — 隐患岗位流转：安全员→分包整改→监理复查→安全部关闭',
+      '状态：confirm → dispatch → accept → submit_result → review_pass/reject',
+      '超期升级：processing → overdue_escalated（+1天安全员·+3天项目经理·+7天集团）'
+    ]
+  },
+  svc_rules: {
+    tag: '强规则引擎', tagColor: '#f97316',
+    desc: 'YAML配置的规则引擎，用于识别高确定性安全风险并自动触发工单。',
+    items: [
+      'engine.py — YAML规则解析·条件匹配（> >= < <= == != in）',
+      'work_order_trigger.py — 规则触发自动去重建单·避免重复',
+      '项目规则：重大隐患超期·特种设备超期·高工期压力',
+      '工人规则：特种作业证过期·频繁违规·体检过期',
+      '分包商规则：安全许可证过期·高风险工人占比'
+    ]
+  },
+  svc_nl2sql: {
+    tag: 'NL2SQL智能问数', tagColor: '#f97316',
+    desc: '自然语言到SQL的8步处理链路，包含生成、审计、执行、澄清和Benchmark。',
+    items: [
+      'api_service.py — NL2SQL API网关',
+      'generator.py — SQL生成器·Schema Linking',
+      'auditor.py — SQL审计·白名单表/字段·禁止DML/DDL',
+      'executor.py — 只读SQL执行器',
+      'clarification.py — 歧义澄清对话管理',
+      'prompt_builder.py — Prompt构建',
+      'schema_context.py — 数据库Schema上下文',
+      'providers.py — LLM Provider适配（mock/qwen/disabled）',
+      'benchmark.py — NL2SQL基准测试'
+    ]
+  },
+  svc_rag: {
+    tag: 'RAG检索增强', tagColor: '#f97316',
+    desc: '基于向量+关键词的混合检索系统，支撑Agent知识库查询。',
+    items: [
+      'service.py — 统一检索入口',
+      'search.py / retrieve.py — 混合检索（向量+关键词）',
+      'ingest.py / chunking.py / embedding.py — 文档灌入流程',
+      'keyword_search.py — MySQL关键词回退搜索',
+      'collections.py — Milvus集合管理'
+    ]
+  },
+  db_mysql: {
+    tag: 'MySQL结构化主库', tagColor: '#f59e0b',
+    desc: 'SQLAlchemy ORM管理的25+张核心业务表。',
+    items: [
+      'tenant / project / subcontractor / worker — 主数据',
+      'hazard / equipment — 隐患与设备台账',
+      'project_risk_profile / worker_risk_profile / subcontractor_risk_profile — 三类画像',
+      'safety_work_order / work_order_flow_log — 工单与流转',
+      'rule_trigger_log — 强规则触发日志',
+      'agent_task_log / agent_dag_run / agent_dag_step_run — Agent运行记录',
+      'agent_approval_request — 审批请求',
+      'agent_nl2sql_audit — NL2SQL审计',
+      'metric_catalog / accident_case_library — 指标目录与案例库',
+      'agent_session_summary / agent_task_checkpoint — 记忆与Checkpoint'
+    ]
+  },
+  dom_risk: {
+    tag: '风险计算核心', tagColor: '#22c55e',
+    desc: '纯函数实现的风险分计算逻辑，无DB依赖，可独立单元测试。',
+    items: [
+      '公式：final_score = min(100, max(0, base × dynamic + rule_bonus))',
+      '项目基础分：9维度加权（Σ维度得分×权重）',
+      '动态修正：min(1.50, 1.00 + ΣΔ) — 赶工期/夜间/交叉/极端天气等',
+      '强规则触发：重大隐患+20·无证+25·未审批+30·事故+30',
+      '四级等级：低(0-30)·中(31-60)·高(61-80)·极高(81-100)'
+    ]
+  },
+  ext_qwen: {
+    tag: '大语言模型', tagColor: '#3b82f6',
+    desc: '阿里云Qwen API，支撑Agent推理、NL2SQL生成、报告生成和智能问答。',
+    items: [
+      '模型：qwen-plus（默认）·qwen-max·qwen-coder',
+      '用途：意图识别·画像解释·整改建议·报告生成·SQL生成',
+      '配置：DASHSCOPE_API_KEY环境变量',
+      'Fallback：mock模式（无Key时返回模拟数据）'
+    ]
+  },
+  core_security: {
+    tag: '安全与权限', tagColor: '#6366f1',
+    desc: '多层权限控制体系，支持Mock、JWT和OAuth三种模式。',
+    items: [
+      'MockUser：开发调试默认模式',
+      'JWT Bearer：可选生产模式',
+      'OAuth：企业微信/钉钉集成',
+      'data_scope：company_id + org_path + project_id 三层过滤',
+      'apply_data_scope()：自动注入行级权限条件'
+    ]
+  }
+};
+
+function getDefaultDetail(node) {
+  return {
+    tag: node.label, tagColor: '#94a3b8',
+    desc: node.sub || '项目架构中的核心组件，承担特定的业务或技术职责。',
+    items: ['点击高亮节点查看与其他模块的连接关系', '支持滚轮缩放和拖拽平移浏览全景', '使用左侧图例可筛选显示特定层级']
+  };
+}
+
+// ==================== 渲染 ====================
+const layersContainer = document.getElementById('layersContainer');
+const connectionsSvg = document.getElementById('connections');
+const legendList = document.getElementById('legendList');
+
+// 渲染图例
+architectureData.layers.forEach(layer => {
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+  item.dataset.layer = layer.id;
+  item.innerHTML = `<div class="legend-color" style="background:${layer.color}"></div><span>${layer.name}</span>`;
+  item.onclick = () => toggleLayer(layer.id);
+  legendList.appendChild(item);
+});
+
+// 渲染层和节点
+architectureData.layers.forEach(layer => {
+  const layerEl = document.createElement('div');
+  layerEl.className = `layer layer-${layer.id}`;
+  layerEl.dataset.layer = layer.id;
+
+  const titleEl = document.createElement('div');
+  titleEl.className = 'layer-title';
+  titleEl.textContent = layer.name;
+  layerEl.appendChild(titleEl);
+
+  const nodesEl = document.createElement('div');
+  nodesEl.className = 'layer-nodes';
+
+  layer.nodes.forEach(node => {
+    const nodeEl = document.createElement('div');
+    nodeEl.className = 'node';
+    nodeEl.dataset.id = node.id;
+    nodeEl.dataset.layer = layer.id;
+    nodeEl.innerHTML = `<span class="node-icon">${node.icon}</span><span class="node-label">${node.label}</span>${node.sub ? `<span class="node-sub">${node.sub}</span>` : ''}`;
+    nodeEl.onclick = (e) => { e.stopPropagation(); selectNode(node.id); };
+    nodesEl.appendChild(nodeEl);
+  });
+
+  layerEl.appendChild(nodesEl);
+  layersContainer.appendChild(layerEl);
+});
+
+// ==================== 连线 ====================
+const layerConnections = [
+  { fromLayer:'external', toLayer:'store', color:'#3b82f6', bidirectional:false },
+  { fromLayer:'store', toLayer:'infra', color:'#f59e0b', bidirectional:true },
+  { fromLayer:'infra', toLayer:'core', color:'#ec4899', bidirectional:false },
+  { fromLayer:'core', toLayer:'schema', color:'#6366f1', bidirectional:true },
+  { fromLayer:'schema', toLayer:'domain', color:'#a855f7', bidirectional:true },
+  { fromLayer:'domain', toLayer:'service', color:'#22c55e', bidirectional:false },
+  { fromLayer:'service', toLayer:'api', color:'#f97316', bidirectional:false },
+  { fromLayer:'api', toLayer:'frontend', color:'#14b8a6', bidirectional:false },
+  { from:'svc_rag', to:'db_milvus', color:'#ec4899', direct:true },
+  { from:'svc_graph', to:'db_neo4j', color:'#ec4899', direct:true },
+  { from:'svc_agents', to:'db_redis', color:'#ec4899', direct:true },
+  { from:'svc_profiles', to:'db_redis', color:'#ec4899', direct:true },
+  { from:'svc_agents', to:'ext_qwen', color:'#3b82f6', direct:true },
+  { from:'svc_nl2sql', to:'ext_qwen', color:'#3b82f6', direct:true },
+  { from:'svc_reports', to:'ext_qwen', color:'#3b82f6', direct:true },
+  { from:'svc_cases', to:'db_milvus', color:'#ec4899', direct:true },
+];
+
+function getNodeCenter(id) {
+  const el = document.querySelector(`[data-id="${id}"]`);
+  if(!el) return null;
+  const canvasRect = document.getElementById('canvas').getBoundingClientRect();
+  const rect = el.getBoundingClientRect();
+  return {
+    x: rect.left + rect.width/2 - canvasRect.left,
+    y: rect.top + rect.height/2 - canvasRect.top
+  };
+}
+
+function drawPath(a, b, color, bidirectional) {
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  const dy = b.y - a.y;
+  const c1 = { x: a.x, y: a.y + dy * 0.5 };
+  const c2 = { x: b.x, y: b.y - dy * 0.5 };
+  const d = `M ${a.x} ${a.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${b.x} ${b.y}`;
+  path.setAttribute('d', d);
+  path.setAttribute('stroke', color);
+  path.setAttribute('class', 'conn-path');
+  path.setAttribute('marker-end', 'url(#arrow)');
+  if(bidirectional) path.setAttribute('marker-start', 'url(#arrow)');
+  connectionsSvg.appendChild(path);
+}
+
+function drawConnections() {
+  connectionsSvg.innerHTML = '<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(148,163,184,0.4)"/></marker></defs>';
+
+  layerConnections.forEach(conn => {
+    if(conn.direct) {
+      const a = getNodeCenter(conn.from);
+      const b = getNodeCenter(conn.to);
+      if(a && b) drawPath(a, b, conn.color, false);
+    } else {
+      const fromNodes = document.querySelectorAll(`.layer-${conn.fromLayer} .node`);
+      const toNodes = document.querySelectorAll(`.layer-${conn.toLayer} .node`);
+      if(!fromNodes.length || !toNodes.length) return;
+      const fromCenters = Array.from(fromNodes).map(n => getNodeCenter(n.dataset.id)).filter(Boolean);
+      const toCenters = Array.from(toNodes).map(n => getNodeCenter(n.dataset.id)).filter(Boolean);
+      const sampleFrom = fromCenters.filter((_,i) => i % Math.ceil(fromCenters.length/4) === 0);
+      const sampleTo = toCenters.filter((_,i) => i % Math.ceil(toCenters.length/4) === 0);
+      sampleFrom.forEach((a, i) => {
+        const b = sampleTo[i % sampleTo.length];
+        if(a && b) drawPath(a, b, conn.color, conn.bidirectional);
+      });
+    }
+  });
+}
+
+// ==================== 交互 ====================
+let scale = 1, panX = 0, panY = 0;
+let isDragging = false, dragStartX, dragStartY, startPanX, startPanY;
+const viewport = document.getElementById('viewport');
+const canvas = document.getElementById('canvas');
+const zoomDisplay = document.getElementById('zoomDisplay');
+
+function updateTransform() {
+  canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  zoomDisplay.textContent = Math.round(scale * 100) + '%';
+}
+
+function zoomIn() { scale = Math.min(scale * 1.2, 3); updateTransform(); }
+function zoomOut() { scale = Math.max(scale / 1.2, 0.2); updateTransform(); }
+function resetView() { scale = 1; panX = 0; panY = 0; updateTransform(); }
+
+function fitToScreen() {
+  const vpRect = viewport.getBoundingClientRect();
+  const contentRect = layersContainer.getBoundingClientRect();
+  const padding = 80;
+  const scaleX = (vpRect.width - padding*2) / contentRect.width;
+  const scaleY = (vpRect.height - padding*2) / contentRect.height;
+  scale = Math.min(scaleX, scaleY, 1);
+  panX = (vpRect.width - contentRect.width * scale) / 2;
+  panY = (vpRect.height - contentRect.height * scale) / 2 + 30;
+  updateTransform();
+}
+
+viewport.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  const newScale = Math.min(Math.max(scale * delta, 0.2), 3);
+  const rect = viewport.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  panX = mx - (mx - panX) * (newScale / scale);
+  panY = my - (my - panY) * (newScale / scale);
+  scale = newScale;
+  updateTransform();
+}, { passive: false });
+
+viewport.addEventListener('mousedown', e => {
+  if(e.target.closest('.node')) return;
+  isDragging = true;
+  dragStartX = e.clientX; dragStartY = e.clientY;
+  startPanX = panX; startPanY = panY;
+  viewport.classList.add('grabbing');
+});
+
+window.addEventListener('mousemove', e => {
+  if(!isDragging) return;
+  panX = startPanX + (e.clientX - dragStartX);
+  panY = startPanY + (e.clientY - dragStartY);
+  updateTransform();
+});
+
+window.addEventListener('mouseup', () => { isDragging = false; viewport.classList.remove('grabbing'); });
+
+// 触摸支持
+let touchStartDist = 0, touchStartScale = 1;
+viewport.addEventListener('touchstart', e => {
+  if(e.touches.length === 2) {
+    touchStartDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    touchStartScale = scale;
+  }
+});
+viewport.addEventListener('touchmove', e => {
+  if(e.touches.length === 2) {
+    e.preventDefault();
+    const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    scale = Math.min(Math.max(touchStartScale * (dist / touchStartDist), 0.2), 3);
+    updateTransform();
+  }
+}, { passive: false });
+
+// ==================== 节点选择 ====================
+let activeNodeId = null;
+
+function selectNode(id) {
+  activeNodeId = id;
+  document.querySelectorAll('.node').forEach(n => {
+    n.classList.toggle('active', n.dataset.id === id);
+    n.classList.toggle('dim', n.dataset.id !== id);
+  });
+  showDetail(id);
+}
+
+function showDetail(id) {
+  const nodeEl = document.querySelector(`[data-id="${id}"]`);
+  const layer = architectureData.layers.find(l => l.id === nodeEl.dataset.layer);
+  const node = layer.nodes.find(n => n.id === id);
+  const detail = nodeDetails[id] || getDefaultDetail(node);
+
+  const panel = document.getElementById('detailPanel');
+  const content = document.getElementById('detailContent');
+
+  content.innerHTML = `
+    <div class="detail-header">
+      <span class="detail-tag" style="background:${detail.tagColor}20;color:${detail.tagColor};border:1px solid ${detail.tagColor}40">${detail.tag}</span>
+      <div class="detail-title">${node.icon} ${node.label}</div>
+      <div class="detail-desc">${detail.desc}</div>
+    </div>
+    <div class="detail-section">
+      <h4>详细信息</h4>
+      <ul class="detail-list">
+        ${detail.items.map(item => `<li style="border-left-color:${detail.tagColor}60">${item}</li>`).join('')}
+      </ul>
+    </div>
+    <div class="detail-section">
+      <h4>所属层级</h4>
+      <div style="font-size:12.5px;color:var(--muted)">${layer.name}</div>
+    </div>
+  `;
+  panel.classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detailPanel').classList.remove('open');
+  document.querySelectorAll('.node').forEach(n => n.classList.remove('active', 'dim'));
+  activeNodeId = null;
+}
+
+viewport.addEventListener('click', e => {
+  if(e.target === viewport || e.target === canvas || e.target.id === 'connections') closeDetail();
+});
+
+// ==================== 层级过滤 ====================
+const layerVisibility = {};
+architectureData.layers.forEach(l => layerVisibility[l.id] = true);
+
+function toggleLayer(layerId) {
+  layerVisibility[layerId] = !layerVisibility[layerId];
+  const layerEl = document.querySelector(`.layer-${layerId}`);
+  const legendItem = document.querySelector(`.legend-item[data-layer="${layerId}"]`);
+  if(layerVisibility[layerId]) {
+    layerEl.style.display = 'flex';
+    legendItem.classList.remove('hidden');
+  } else {
+    layerEl.style.display = 'none';
+    legendItem.classList.add('hidden');
+  }
+  setTimeout(drawConnections, 100);
+}
+
+// ==================== 帮助 ====================
+let helpVisible = false;
+function toggleHelp() {
+  helpVisible = !helpVisible;
+  document.getElementById('helpBtn').classList.toggle('active', helpVisible);
+  document.getElementById('hint').style.display = helpVisible ? 'block' : 'none';
+}
+
+// ==================== 初始化 ====================
+window.addEventListener('load', () => {
+  setTimeout(() => { drawConnections(); fitToScreen(); }, 200);
+});
+
+window.addEventListener('resize', () => { drawConnections(); });
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') closeDetail();
+  if(e.key === '+' || e.key === '=') zoomIn();
+  if(e.key === '-') zoomOut();
+  if(e.key === '0') resetView();
+  if(e.key === 'f' || e.key === 'F') fitToScreen();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+rules:
+  - rule_id: SR-PROJ-001
+    object_type: project
+    rule_name: 重大隐患超期未闭环
+    severity: critical
+    risk_tag: 重大隐患超期未闭环
+    condition:
+      field: major_hazard_overdue_count
+      operator: ">"
+      value: 0
+    action:
+      risk_bonus: 20
+      suggested_work_order_type: hazard_rectification
+      work_order_title_template: 重大隐患超期未闭环整改
+      work_order_priority: urgent
+      auto_create_work_order: true
+
+  - rule_id: SR-PROJ-004
+    object_type: project
+    rule_name: 特种设备超期未检
+    severity: high
+    risk_tag: 特种设备超期未检
+    condition:
+      field: equipment_overdue_count
+      operator: ">"
+      value: 0
+    action:
+      risk_bonus: 25
+      suggested_work_order_type: equipment_inspection
+      work_order_title_template: 特种设备超期未检整改
+      work_order_priority: high
+      auto_create_work_order: true
+
+  - rule_id: SR-PROJ-003
+    object_type: project
+    rule_name: 高工期压力项目
+    severity: high
+    risk_tag: 高工期压力
+    condition:
+      field: schedule_pressure_index
+      operator: ">="
+      value: 30
+    action:
+      risk_bonus: 10
+      suggested_work_order_type: safety_review
+      work_order_title_template: 高工期压力项目安全复核
+      work_order_priority: high
+      auto_create_work_order: true

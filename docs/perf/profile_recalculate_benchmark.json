@@ -1,0 +1,183 @@
+{
+  "title": "Phase 4-C.6 profile/recalculate 批量耗时 — 500 项目",
+  "benchmark": {
+    "meta": {
+      "generated_at": "2026-06-08T09:19:33.509716+00:00",
+      "mode": "api_testclient",
+      "base_url": "http://127.0.0.1:8000",
+      "tenant_id": "CSCEC-SCALE",
+      "projects": 500,
+      "sla_seconds": 30.0
+    },
+    "seed": {
+      "tenant_id": "CSCEC-SCALE",
+      "totals": {
+        "projects": 500
+      },
+      "skipped": true
+    },
+    "scenarios": [
+      {
+        "name": "project_only",
+        "profile_types": [
+          "project"
+        ],
+        "elapsed_ms": 15228.13,
+        "elapsed_seconds": 15.228,
+        "sla_seconds": 30.0,
+        "sla_passed": true,
+        "status_code": 200,
+        "counts": {
+          "recalculated_projects": 1994,
+          "recalculated_workers": 0,
+          "recalculated_subcontractors": 0,
+          "created_work_orders": 643,
+          "skipped_duplicate_work_orders": 0
+        },
+        "error": null
+      },
+      {
+        "name": "worker_only",
+        "profile_types": [
+          "worker"
+        ],
+        "elapsed_ms": 136037.43,
+        "elapsed_seconds": 136.037,
+        "sla_seconds": 30.0,
+        "sla_passed": false,
+        "status_code": 200,
+        "counts": {
+          "recalculated_projects": 0,
+          "recalculated_workers": 15952,
+          "recalculated_subcontractors": 0,
+          "created_work_orders": 23256,
+          "skipped_duplicate_work_orders": 0
+        },
+        "error": null
+      },
+      {
+        "name": "subcontractor_only",
+        "profile_types": [
+          "subcontractor"
+        ],
+        "elapsed_ms": 38843.89,
+        "elapsed_seconds": 38.844,
+        "sla_seconds": 30.0,
+        "sla_passed": false,
+        "status_code": 200,
+        "counts": {
+          "recalculated_projects": 0,
+          "recalculated_workers": 0,
+          "recalculated_subcontractors": 3988,
+          "created_work_orders": 136,
+          "skipped_duplicate_work_orders": 0
+        },
+        "error": null
+      },
+      {
+        "name": "full_batch",
+        "profile_types": [
+          "project",
+          "worker",
+          "subcontractor"
+        ],
+        "elapsed_ms": 128602.99,
+        "elapsed_seconds": 128.603,
+        "sla_seconds": 30.0,
+        "sla_passed": false,
+        "status_code": 200,
+        "counts": {
+          "recalculated_projects": 1994,
+          "recalculated_workers": 15952,
+          "recalculated_subcontractors": 3988,
+          "created_work_orders": 0,
+          "skipped_duplicate_work_orders": 24035
+        },
+        "error": null
+      }
+    ],
+    "summary": {
+      "scenario_count": 4,
+      "full_batch_elapsed_ms": 128602.99,
+      "full_batch_elapsed_seconds": 128.603,
+      "sla_seconds": 30.0,
+      "sla_passed": false,
+      "sla_failures": [
+        "worker_only: 136.037s > 30.0s",
+        "subcontractor_only: 38.844s > 30.0s",
+        "full_batch: 128.603s > 30.0s"
+      ],
+      "errors": []
+    },
+    "notes": [
+      "未检测到可访问的 API（http://127.0.0.1:8000），回退为 TestClient 进程内压测；耗时仅供参考，生产级基线请在独立压测环境对 HTTP 服务复测。"
+    ]
+  },
+  "pool_tuning": {
+    "current": {
+      "pool_size": 10,
+      "max_overflow": 20,
+      "pool_pre_ping": true,
+      "pool_recycle_seconds": 3600,
+      "max_connections_per_process": 30,
+      "checked_in": 1,
+      "checked_out": 0,
+      "overflow": -9
+    },
+    "suggested_profiles": {
+      "local": {
+        "db_pool_size": 10,
+        "db_max_overflow": 20,
+        "db_pool_recycle_seconds": 3600
+      },
+      "staging_500": {
+        "db_pool_size": 15,
+        "db_max_overflow": 25,
+        "db_pool_recycle_seconds": 3600
+      },
+      "production_2000": {
+        "db_pool_size": 20,
+        "db_max_overflow": 40,
+        "db_pool_recycle_seconds": 3600
+      }
+    },
+    "recommendations": [
+      {
+        "area": "profile/recalculate",
+        "priority": "高",
+        "action": "全量重算耗时 128.603s 超过 30s SLA，优先拆分 profile_types 或引入队列任务。",
+        "reason": "单租户全量同步重算不适合作为在线 API，应改为后台 Job + 进度查询。"
+      },
+      {
+        "area": "连接池",
+        "priority": "中",
+        "action": "生产环境建议 DB_POOL_SIZE=15、DB_MAX_OVERFLOW=25；按 uvicorn workers 数核算总连接上限。",
+        "reason": "500 项目门禁压测已通过，但全量 projects 列表与重算任务叠加时需预留连接余量。"
+      },
+      {
+        "area": "连接池",
+        "priority": "中",
+        "action": "总连接预算：workers × (pool_size + max_overflow) ≤ MySQL max_connections × 0.7。",
+        "reason": "避免多 worker 进程各自持池导致数据库连接耗尽。"
+      },
+      {
+        "area": "profile/recalculate",
+        "priority": "高",
+        "action": "按项目批量预取 hazard/equipment，减少逐项目 N+1 查询；工人/分包商画像可分片异步重算。",
+        "reason": "当前重算循环内逐实体查询是批量耗时的主要来源。"
+      },
+      {
+        "area": "GET /projects",
+        "priority": "高",
+        "action": "强制分页（默认 page_size≤50）并对排名/列表接口增加 Redis 缓存。",
+        "reason": "2000 项目压测中 projects_list P95 曾超 500ms，全量扫描是容量敏感点。"
+      },
+      {
+        "area": "运维",
+        "priority": "低",
+        "action": "开启 pool_pre_ping（已默认）并监控 checked_out/overflow 指标。",
+        "reason": "长事务重算期间可及时发现僵死连接与池耗尽。"
+      }
+    ]
+  }
+}

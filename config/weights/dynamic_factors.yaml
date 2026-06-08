@@ -1,0 +1,57 @@
+# 动态修正因子表（对齐技术文档 V1.7 §6.5）
+# 动态修正系数 = min(max_factor, base_factor + Σ 命中因子增量)
+
+version: "1.0.0"
+effective_from: "2026-06-03"
+base_factor: 1.00
+max_factor: 1.50
+
+# 同组因子只取最高增量（例如气象黄/橙/红不叠加）
+exclusive_groups:
+  - DF-WEA
+
+factors:
+  - factor_code: DF-SCH-001
+    group: DF-SCH
+    factor_name: 赶工期
+    field: schedule_pressure_index
+    operator: ">"
+    value: 20
+    delta: 0.15
+    evidence_source: 进度计划系统
+
+  - factor_code: DF-SCH-002
+    group: DF-SCH
+    factor_name: 夜间施工
+    field: night_shift_days
+    operator: ">="
+    value: 3
+    delta: 0.08
+    evidence_source: 作业票/考勤
+
+  - factor_code: DF-SCH-003
+    group: DF-SCH
+    factor_name: 交叉作业
+    field: cross_operation_count
+    operator: ">="
+    value: 2
+    delta: 0.10
+    evidence_source: 作业计划/BIM
+
+  - factor_code: DF-WEA-001
+    group: DF-WEA
+    factor_name: 极端天气
+    field: weather_alert_level
+    operator: ">="
+    value: 2
+    delta: 0.20
+    evidence_source: 气象/环境监测
+
+  - factor_code: DF-HZD-001
+    group: DF-HZD
+    factor_name: 重大隐患未闭环
+    field: major_hazard_overdue_count
+    operator: ">"
+    value: 0
+    delta: 0.20
+    evidence_source: 隐患系统

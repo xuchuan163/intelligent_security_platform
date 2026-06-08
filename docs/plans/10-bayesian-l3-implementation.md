@@ -126,7 +126,7 @@ mgmt_schedule_pressure → … → collapse / fire / mechanical_injury
 | L3-D.2 | `run_l3_attribution()` 返回结构对齐 L2 `AttributionResult` + 扩展字段 | 同上 | ✅ `model_level=="L3"` |
 | L3-D.3 | **传播路径**：DAG 上 top-k 路径（边权 = 条件概率乘积） | `l3_inference.py` `_top_propagation_paths()` | ✅ 响应含 `propagation_paths[]` |
 | L3-D.4 | Service 路由：`case_count>=200` 且 CPT 存在 → L3，否则 L2 | `services/bayesian/service.py` | ✅ `test_bayesian_l3.py::test_fallback_to_l2` |
-| L3-D.5 | （可选）Neo4j 邻居作补充 evidence，权重低于 CPT | 调用 `services/graph/neighbors.py` | ⬜ 本期跳过 |
+| L3-D.5 | （可选）Neo4j 邻居作补充 evidence，权重低于 CPT | `services/bayesian/graph_evidence.py` | ✅ `NEO4J_ENABLED=false` 时不影响 L3 |
 
 **L2 保留策略：** 不删除 `inference.py`；`analyze_attribution(..., model_level="auto"|"L2"|"L3")`。
 
@@ -160,7 +160,7 @@ curl -X POST http://127.0.0.1:8000/api/v1/analysis/attribution \
 | L3-F.1 | 结构/标签/CPT 单元测试 | `tests/domain/test_bayesian_*.py` | ✅ 独立可跑 |
 | L3-F.2 | 服务 + API 集成测试 | `tests/services/test_bayesian_l3.py` | ✅ 10+ cases |
 | L3-F.3 | 校准报告进 CI 可选 job | `docs/algo/bayesian_l3_backtest.md` | ✅ 文档化命令 |
-| L3-F.4 | 更新 `docs/api/openapi.yaml`、技术文档 §18 备注 | docs | ⬜ 可选后续 |
+| L3-F.4 | 更新 `docs/api/openapi.yaml`、技术文档 §18 备注 | docs | ✅ OpenAPI 已补 attribution / bayesian-versions |
 | L3-F.5 | `docs/PHASE5_BAYESIAN_L3_ACCEPTANCE.md` 六项门禁 | docs | ✅ 对标 Phase 4 验收格式 |
 
 ---

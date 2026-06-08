@@ -1,0 +1,70 @@
+rules:
+  - rule_id: SR-WORKER-004
+    object_type: worker
+    rule_name: 近期违规
+    severity: medium
+    risk_tag: 近期违规
+    condition:
+      all:
+        - field: violation_count_30d
+          operator: ">="
+          value: 1
+        - field: violation_count_30d
+          operator: "<"
+          value: 3
+    action:
+      risk_bonus: 10
+      suggested_work_order_type: safety_training
+      work_order_title_template: 工人{object_id}近期违规复训
+      work_order_priority: normal
+      auto_create_work_order: true
+
+  - rule_id: SR-WORKER-005
+    object_type: worker
+    rule_name: 频繁违规
+    severity: high
+    risk_tag: 频繁违规
+    condition:
+      field: violation_count_30d
+      operator: ">="
+      value: 3
+    action:
+      risk_bonus: 15
+      suggested_work_order_type: safety_training
+      work_order_title_template: 工人{object_id}频繁违规专项整改
+      work_order_priority: high
+      auto_create_work_order: true
+
+  - rule_id: SR-WORKER-001
+    object_type: worker
+    rule_name: 特种作业证异常
+    severity: high
+    risk_tag: 特种作业证异常
+    condition:
+      field: special_cert_status
+      operator: in
+      value:
+        - expired
+        - missing
+    action:
+      risk_bonus: 25
+      suggested_work_order_type: worker_training
+      work_order_title_template: 工人{object_id}特种作业证异常复核
+      work_order_priority: high
+      auto_create_work_order: true
+
+  - rule_id: SR-WORKER-002
+    object_type: worker
+    rule_name: 体检过期
+    severity: medium
+    risk_tag: 体检过期
+    condition:
+      field: health_check_status
+      operator: "=="
+      value: expired
+    action:
+      risk_bonus: 15
+      suggested_work_order_type: worker_health_check
+      work_order_title_template: 工人{object_id}体检过期复核
+      work_order_priority: normal
+      auto_create_work_order: true

@@ -1,0 +1,2 @@
+accident_case_id,tenant_id,accident_type,severity,project_type,operation_scene,direct_cause,indirect_cause,involved_subjects,warning_indicators,rectification_measures,tags
+AC-IMPORT-001,CSCEC,高处坠落,一般事故,housing,主体结构临边作业,临边防护缺失，作业人员未正确使用安全带。,班前交底不到位，现场巡检未及时发现防护缺口。,"{""subjects"":[""project"",""subcontractor"",""worker""]}","[{""metric_code"":""HAZARD_OVERDUE_COUNT"",""value"":2}]",恢复临边防护，复核高处作业交底，整改完成后复查闭环。,高处作业|临边防护|班前教育

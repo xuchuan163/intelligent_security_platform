@@ -1,0 +1,129 @@
+{
+  "title": "Phase 4-C.3 100 项目冒烟压测基线",
+  "seed": {
+    "tenant_id": "CSCEC-SCALE",
+    "projects_created": 100,
+    "projects_updated": 0,
+    "subcontractors_created": 200,
+    "subcontractors_updated": 0,
+    "workers_created": 800,
+    "workers_updated": 0,
+    "project_profiles_upserted": 100,
+    "worker_profiles_upserted": 800,
+    "subcontractor_profiles_upserted": 200,
+    "totals": {
+      "projects": 100,
+      "subcontractors": 200,
+      "workers": 800
+    }
+  },
+  "load_test": {
+    "meta": {
+      "generated_at": "2026-06-08T08:26:39.100447+00:00",
+      "base_url": "http://127.0.0.1:8000",
+      "tenant_id": "CSCEC-SCALE",
+      "iterations": 30,
+      "concurrency": 4,
+      "timeout_seconds": 30.0,
+      "mode": "in_process_testclient"
+    },
+    "summary": {
+      "total_requests": 120,
+      "total_errors": 0,
+      "error_rate": 0.0,
+      "sla_passed": true,
+      "sla_failures": []
+    },
+    "endpoints": [
+      {
+        "name": "dashboard_overview",
+        "method": "GET",
+        "path": "/api/v1/dashboard/overview",
+        "count": 30,
+        "errors": 0,
+        "error_rate": 0.0,
+        "latency_ms": {
+          "min": 35.74,
+          "avg": 79.56,
+          "p50": 65.09,
+          "p95": 174.55,
+          "p99": 175.33,
+          "max": 175.33
+        },
+        "sla_p95_ms": 800,
+        "sla_passed": true
+      },
+      {
+        "name": "projects_list",
+        "method": "GET",
+        "path": "/api/v1/projects",
+        "count": 30,
+        "errors": 0,
+        "error_rate": 0.0,
+        "latency_ms": {
+          "min": 26.16,
+          "avg": 50.71,
+          "p50": 45.26,
+          "p95": 98.28,
+          "p99": 104.26,
+          "max": 104.26
+        },
+        "sla_p95_ms": 500,
+        "sla_passed": true
+      },
+      {
+        "name": "profile_ranking",
+        "method": "GET",
+        "path": "/api/v1/profile/ranking/projects",
+        "count": 30,
+        "errors": 0,
+        "error_rate": 0.0,
+        "latency_ms": {
+          "min": 18.83,
+          "avg": 32.34,
+          "p50": 33.21,
+          "p95": 37.82,
+          "p99": 38.19,
+          "max": 38.19
+        },
+        "sla_p95_ms": 500,
+        "sla_passed": true
+      },
+      {
+        "name": "work_orders_list",
+        "method": "GET",
+        "path": "/api/v1/work-orders",
+        "count": 30,
+        "errors": 0,
+        "error_rate": 0.0,
+        "latency_ms": {
+          "min": 25.01,
+          "avg": 31.94,
+          "p50": 32.25,
+          "p95": 38.69,
+          "p99": 39.17,
+          "max": 39.17
+        },
+        "sla_p95_ms": 500,
+        "sla_passed": true
+      }
+    ],
+    "seed": {
+      "tenant_id": "CSCEC-SCALE",
+      "projects_created": 100,
+      "projects_updated": 0,
+      "subcontractors_created": 200,
+      "subcontractors_updated": 0,
+      "workers_created": 800,
+      "workers_updated": 0,
+      "project_profiles_upserted": 100,
+      "worker_profiles_upserted": 800,
+      "subcontractor_profiles_upserted": 200,
+      "totals": {
+        "projects": 100,
+        "subcontractors": 200,
+        "workers": 800
+      }
+    }
+  }
+}

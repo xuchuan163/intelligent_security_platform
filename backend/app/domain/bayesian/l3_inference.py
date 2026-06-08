@@ -36,6 +36,8 @@ class L3AttributionResult:
     cpt_version: str
     structure_version: str
     calibration_hint: str
+    graph_supplemental_evidence: tuple[dict[str, Any], ...] = ()
+    neo4j_evidence_status: str = "disabled"
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -56,6 +58,8 @@ class L3AttributionResult:
             "cpt_version": self.cpt_version,
             "structure_version": self.structure_version,
             "calibration_hint": self.calibration_hint,
+            "graph_supplemental_evidence": list(self.graph_supplemental_evidence),
+            "neo4j_evidence_status": self.neo4j_evidence_status,
         }
 
 
@@ -67,14 +71,28 @@ def _evidence_to_factor_labels(evidence_map: dict[str, float]) -> dict[str, int]
     }
 
 
+def _merge_graph_boosts(
+    evidence_map: dict[str, float],
+    graph_boosts: dict[str, float] | None,
+) -> dict[str, float]:
+    if not graph_boosts:
+        return evidence_map
+    merged = dict(evidence_map)
+    for factor_id, boost in graph_boosts.items():
+        merged[factor_id] = min(1.0, merged.get(factor_id, 0.0) + boost)
+    return merged
+
+
 def _factor_scores(
     evidence_map: dict[str, float],
     *,
     cpt_payload: dict[str, Any],
+    graph_boosts: dict[str, float] | None = None,
 ) -> dict[str, float]:
+    merged_evidence = _merge_graph_boosts(evidence_map, graph_boosts)
     scores: dict[str, float] = {}
     for factor in RISK_FACTORS:
-        evidence_strength = evidence_map.get(factor.factor_id, 0.0)
+        evidence_strength = merged_evidence.get(factor.factor_id, 0.0)
         learned_active = float(cpt_payload["nodes"][factor.factor_id]["probabilities"]["active"])
         scores[factor.factor_id] = evidence_strength * 0.65 + learned_active * 0.35 + factor.prior * 0.1
     total = sum(scores.values()) or 1.0
@@ -183,6 +201,9 @@ def run_l3_attribution(
     cpt_payload: dict[str, Any] | None = None,
     structure: BayesianNetworkStructure | None = None,
     cpt_path: Path | None = None,
+    graph_factor_boosts: dict[str, float] | None = None,
+    graph_supplemental_evidence: list[dict[str, Any]] | None = None,
+    neo4j_evidence_status: str = "disabled",
 ) -> L3AttributionResult:
     cpt_payload = cpt_payload or load_cpt_learned(cpt_path or DEFAULT_CPT_LEARNED_PATH)
     structure = structure or load_network_structure()
@@ -192,11 +213,16 @@ def run_l3_attribution(
         worker_profile=worker_profile,
         subcontractor_profile=subcontractor_profile,
     )
-    factor_scores = _factor_scores(evidence_map, cpt_payload=cpt_payload)
+    merged_evidence_map = _merge_graph_boosts(evidence_map, graph_factor_boosts)
+    factor_scores = _factor_scores(
+        evidence_map,
+        cpt_payload=cpt_payload,
+        graph_boosts=graph_factor_boosts,
+    )
     contributions = _factor_contributions(factor_scores)
     target_outcome_id = _resolve_outcome_id(accident_type)
     accident_probs = _accident_probabilities(
-        evidence_map,
+        merged_evidence_map,
         cpt_payload=cpt_payload,
         structure=structure,
         target_outcome_id=target_outcome_id,
@@ -206,10 +232,12 @@ def run_l3_attribution(
         worker_profile=worker_profile,
         subcontractor_profile=subcontractor_profile,
     )
+    if graph_supplemental_evidence:
+        evidence = [*evidence, *graph_supplemental_evidence]
 
     path_target = target_outcome_id or accident_probs[0]["outcome_id"]
     propagation_paths = _top_propagation_paths(
-        evidence_map,
+        merged_evidence_map,
         cpt_payload=cpt_payload,
         structure=structure,
         target_outcome_id=path_target,
@@ -244,4 +272,6 @@ def run_l3_attribution(
         cpt_version=str(cpt_payload.get("model_version", "bayesian-l3-unknown")),
         structure_version=str(cpt_payload.get("structure_version", structure.version)),
         calibration_hint=_calibration_hint(cpt_payload),
+        graph_supplemental_evidence=tuple(graph_supplemental_evidence or ()),
+        neo4j_evidence_status=neo4j_evidence_status,
     )
