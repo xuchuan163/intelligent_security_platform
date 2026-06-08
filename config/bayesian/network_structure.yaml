@@ -1,0 +1,76 @@
+# Bayesian L3 DAG structure (Phase 5 L3-A.1)
+# Nodes align with domain/bayesian/prior.py factor_id and outcome_id.
+version: bayesian-l3-structure-v1
+nodes:
+  - { id: human_training_gap, kind: factor, category: 人 }
+  - { id: human_violation, kind: factor, category: 人 }
+  - { id: human_fatigue, kind: factor, category: 人 }
+  - { id: human_health_mismatch, kind: factor, category: 人 }
+  - { id: human_uncertified, kind: factor, category: 人 }
+  - { id: machine_fault, kind: factor, category: 机 }
+  - { id: machine_maintenance_gap, kind: factor, category: 机 }
+  - { id: machine_guard_failure, kind: factor, category: 机 }
+  - { id: material_fire_risk, kind: factor, category: 料 }
+  - { id: material_stack_unstable, kind: factor, category: 料 }
+  - { id: method_plan_missing, kind: factor, category: 法 }
+  - { id: method_briefing_gap, kind: factor, category: 法 }
+  - { id: method_permit_irregular, kind: factor, category: 法 }
+  - { id: env_weather, kind: factor, category: 环 }
+  - { id: env_night_lighting, kind: factor, category: 环 }
+  - { id: env_cross_operation, kind: factor, category: 环 }
+  - { id: mgmt_oversight_gap, kind: factor, category: 管 }
+  - { id: mgmt_rectification_gap, kind: factor, category: 管 }
+  - { id: mgmt_subcontractor_weak, kind: factor, category: 管 }
+  - { id: mgmt_schedule_pressure, kind: factor, category: 管 }
+  - { id: mgmt_safety_investment, kind: factor, category: 管 }
+  - { id: fall_from_height, kind: outcome }
+  - { id: electric_shock, kind: outcome }
+  - { id: struck_by_object, kind: outcome }
+  - { id: collapse, kind: outcome }
+  - { id: fire, kind: outcome }
+  - { id: mechanical_injury, kind: outcome }
+  - { id: other, kind: outcome }
+edges:
+  - { from: human_training_gap, to: fall_from_height }
+  - { from: human_training_gap, to: struck_by_object }
+  - { from: human_violation, to: fall_from_height }
+  - { from: human_violation, to: electric_shock }
+  - { from: human_violation, to: fire }
+  - { from: human_violation, to: mechanical_injury }
+  - { from: human_fatigue, to: fall_from_height }
+  - { from: human_fatigue, to: mechanical_injury }
+  - { from: human_health_mismatch, to: fall_from_height }
+  - { from: human_uncertified, to: electric_shock }
+  - { from: human_uncertified, to: mechanical_injury }
+  - { from: machine_fault, to: electric_shock }
+  - { from: machine_fault, to: mechanical_injury }
+  - { from: machine_maintenance_gap, to: electric_shock }
+  - { from: machine_maintenance_gap, to: collapse }
+  - { from: machine_maintenance_gap, to: mechanical_injury }
+  - { from: machine_guard_failure, to: fall_from_height }
+  - { from: machine_guard_failure, to: struck_by_object }
+  - { from: machine_guard_failure, to: mechanical_injury }
+  - { from: material_fire_risk, to: fire }
+  - { from: material_stack_unstable, to: struck_by_object }
+  - { from: material_stack_unstable, to: collapse }
+  - { from: method_plan_missing, to: collapse }
+  - { from: method_plan_missing, to: fall_from_height }
+  - { from: method_briefing_gap, to: fall_from_height }
+  - { from: method_briefing_gap, to: struck_by_object }
+  - { from: method_permit_irregular, to: electric_shock }
+  - { from: method_permit_irregular, to: fire }
+  - { from: env_weather, to: collapse }
+  - { from: env_weather, to: fall_from_height }
+  - { from: env_night_lighting, to: fall_from_height }
+  - { from: env_night_lighting, to: struck_by_object }
+  - { from: env_cross_operation, to: struck_by_object }
+  - { from: env_cross_operation, to: fall_from_height }
+  - { from: mgmt_oversight_gap, to: fall_from_height }
+  - { from: mgmt_oversight_gap, to: collapse }
+  - { from: mgmt_rectification_gap, to: fall_from_height }
+  - { from: mgmt_rectification_gap, to: collapse }
+  - { from: mgmt_subcontractor_weak, to: struck_by_object }
+  - { from: mgmt_subcontractor_weak, to: mechanical_injury }
+  - { from: mgmt_schedule_pressure, to: fall_from_height }
+  - { from: mgmt_schedule_pressure, to: struck_by_object }
+  - { from: mgmt_safety_investment, to: other }

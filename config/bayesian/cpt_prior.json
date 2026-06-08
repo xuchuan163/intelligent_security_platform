@@ -1,0 +1,423 @@
+{
+  "model_level": "L3",
+  "model_version": "bayesian-l3-prior-v1",
+  "structure_version": "bayesian-l3-structure-v1",
+  "factor_count": 21,
+  "outcome_count": 7,
+  "nodes": {
+    "human_training_gap": {
+      "node_id": "human_training_gap",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.6,
+        "active": 0.4
+      }
+    },
+    "human_violation": {
+      "node_id": "human_violation",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.52,
+        "active": 0.48
+      }
+    },
+    "human_fatigue": {
+      "node_id": "human_fatigue",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.68,
+        "active": 0.32
+      }
+    },
+    "human_health_mismatch": {
+      "node_id": "human_health_mismatch",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.72,
+        "active": 0.28
+      }
+    },
+    "human_uncertified": {
+      "node_id": "human_uncertified",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.64,
+        "active": 0.36
+      }
+    },
+    "machine_fault": {
+      "node_id": "machine_fault",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.68,
+        "active": 0.32
+      }
+    },
+    "machine_maintenance_gap": {
+      "node_id": "machine_maintenance_gap",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.6,
+        "active": 0.4
+      }
+    },
+    "machine_guard_failure": {
+      "node_id": "machine_guard_failure",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.72,
+        "active": 0.28
+      }
+    },
+    "material_fire_risk": {
+      "node_id": "material_fire_risk",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.8,
+        "active": 0.2
+      }
+    },
+    "material_stack_unstable": {
+      "node_id": "material_stack_unstable",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.84,
+        "active": 0.16
+      }
+    },
+    "method_plan_missing": {
+      "node_id": "method_plan_missing",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.76,
+        "active": 0.24
+      }
+    },
+    "method_briefing_gap": {
+      "node_id": "method_briefing_gap",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.64,
+        "active": 0.36
+      }
+    },
+    "method_permit_irregular": {
+      "node_id": "method_permit_irregular",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.68,
+        "active": 0.32
+      }
+    },
+    "env_weather": {
+      "node_id": "env_weather",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.8,
+        "active": 0.2
+      }
+    },
+    "env_night_lighting": {
+      "node_id": "env_night_lighting",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.76,
+        "active": 0.24
+      }
+    },
+    "env_cross_operation": {
+      "node_id": "env_cross_operation",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.6,
+        "active": 0.4
+      }
+    },
+    "mgmt_oversight_gap": {
+      "node_id": "mgmt_oversight_gap",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.6,
+        "active": 0.4
+      }
+    },
+    "mgmt_rectification_gap": {
+      "node_id": "mgmt_rectification_gap",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.52,
+        "active": 0.48
+      }
+    },
+    "mgmt_subcontractor_weak": {
+      "node_id": "mgmt_subcontractor_weak",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.56,
+        "active": 0.44
+      }
+    },
+    "mgmt_schedule_pressure": {
+      "node_id": "mgmt_schedule_pressure",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.56,
+        "active": 0.44
+      }
+    },
+    "mgmt_safety_investment": {
+      "node_id": "mgmt_safety_investment",
+      "kind": "factor",
+      "parents": [],
+      "states": [
+        "inactive",
+        "active"
+      ],
+      "probabilities": {
+        "inactive": 0.8,
+        "active": 0.2
+      }
+    },
+    "fall_from_height": {
+      "node_id": "fall_from_height",
+      "kind": "outcome",
+      "parents": [
+        "human_training_gap",
+        "human_violation",
+        "human_fatigue",
+        "human_health_mismatch",
+        "machine_guard_failure",
+        "method_plan_missing",
+        "method_briefing_gap",
+        "env_weather",
+        "env_night_lighting",
+        "env_cross_operation",
+        "mgmt_oversight_gap",
+        "mgmt_rectification_gap",
+        "mgmt_schedule_pressure"
+      ],
+      "states": [
+        "unlikely",
+        "likely"
+      ],
+      "probabilities": {
+        "unlikely": 0.6825,
+        "likely": 0.3175
+      }
+    },
+    "electric_shock": {
+      "node_id": "electric_shock",
+      "kind": "outcome",
+      "parents": [
+        "human_violation",
+        "human_uncertified",
+        "machine_fault",
+        "machine_maintenance_gap",
+        "method_permit_irregular"
+      ],
+      "states": [
+        "unlikely",
+        "likely"
+      ],
+      "probabilities": {
+        "unlikely": 0.6352,
+        "likely": 0.3648
+      }
+    },
+    "struck_by_object": {
+      "node_id": "struck_by_object",
+      "kind": "outcome",
+      "parents": [
+        "human_training_gap",
+        "machine_guard_failure",
+        "material_stack_unstable",
+        "method_briefing_gap",
+        "env_night_lighting",
+        "env_cross_operation",
+        "mgmt_subcontractor_weak",
+        "mgmt_schedule_pressure"
+      ],
+      "states": [
+        "unlikely",
+        "likely"
+      ],
+      "probabilities": {
+        "unlikely": 0.746,
+        "likely": 0.254
+      }
+    },
+    "collapse": {
+      "node_id": "collapse",
+      "kind": "outcome",
+      "parents": [
+        "machine_maintenance_gap",
+        "material_stack_unstable",
+        "method_plan_missing",
+        "env_weather",
+        "mgmt_oversight_gap",
+        "mgmt_rectification_gap"
+      ],
+      "states": [
+        "unlikely",
+        "likely"
+      ],
+      "probabilities": {
+        "unlikely": 0.7813,
+        "likely": 0.2187
+      }
+    },
+    "fire": {
+      "node_id": "fire",
+      "kind": "outcome",
+      "parents": [
+        "human_violation",
+        "material_fire_risk",
+        "method_permit_irregular"
+      ],
+      "states": [
+        "unlikely",
+        "likely"
+      ],
+      "probabilities": {
+        "unlikely": 0.488,
+        "likely": 0.512
+      }
+    },
+    "mechanical_injury": {
+      "node_id": "mechanical_injury",
+      "kind": "outcome",
+      "parents": [
+        "human_violation",
+        "human_fatigue",
+        "human_uncertified",
+        "machine_fault",
+        "machine_maintenance_gap",
+        "machine_guard_failure",
+        "mgmt_subcontractor_weak"
+      ],
+      "states": [
+        "unlikely",
+        "likely"
+      ],
+      "probabilities": {
+        "unlikely": 0.6869,
+        "likely": 0.3131
+      }
+    },
+    "other": {
+      "node_id": "other",
+      "kind": "outcome",
+      "parents": [
+        "mgmt_safety_investment"
+      ],
+      "states": [
+        "unlikely",
+        "likely"
+      ],
+      "probabilities": {
+        "unlikely": 0.92,
+        "likely": 0.08
+      }
+    }
+  }
+}
