@@ -21,6 +21,7 @@ OUTCOME_STATES: tuple[str, ...] = ("unlikely", "likely")
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_CPT_PRIOR_PATH = REPO_ROOT / "config" / "bayesian" / "cpt_prior.json"
+DEFAULT_CPT_LEARNED_PATH = REPO_ROOT / "config" / "bayesian" / "cpt_learned.json"
 
 DEFAULT_OUTCOME_LIKELIHOOD = 0.05
 
@@ -120,4 +121,16 @@ def write_cpt_prior_file(path: Path | None = None) -> Path:
 
 def load_cpt_prior(path: Path | None = None) -> dict[str, Any]:
     target = path or DEFAULT_CPT_PRIOR_PATH
+    return json.loads(target.read_text(encoding="utf-8"))
+
+
+def cpt_learned_available(path: Path | None = None) -> bool:
+    target = path or DEFAULT_CPT_LEARNED_PATH
+    return target.is_file()
+
+
+def load_cpt_learned(path: Path | None = None) -> dict[str, Any]:
+    target = path or DEFAULT_CPT_LEARNED_PATH
+    if not target.is_file():
+        raise FileNotFoundError(f"Learned CPT not found: {target}")
     return json.loads(target.read_text(encoding="utf-8"))

@@ -20,7 +20,7 @@ Phase 2 Agent 增强     ██████████████████�
 Phase 3 四库与集成     ████████████████████  100%  里程碑门禁已通过 ← 当前
 Phase 4 算法与推广     ████████████████████ 100%  已完成
 项目收口（一期）       ████████████████████ 100%  闭环成立（`docs/PROJECT_CLOSURE.md`）
-Phase 5 贝叶斯 L3      ████████████░░░░░░░░  60%  Sprint 2：L3-C 已完成，L3-D/E/F 待启动 ← 当前
+Phase 5 贝叶斯 L3      ████████████████████ 100%  L3-0~F 核心里程碑已完成 ← 当前
 ```
 
 ---
@@ -672,10 +672,10 @@ flowchart TD
 | L3-C.4 | 校准指标 | ✅ | `services/bayesian/calibration.py` |
 | L3-C.5 | 校准 CLI + 报告 | ✅ | `scripts/run_bayesian_l3_backtest.py` |
 
-### Sprint 3（待启动）
+### Sprint 3 — L3-D / L3-E / L3-F
 
-| 子阶段 | 内容 | 状态 |
-|:---:|---|:---:|
-| L3-D | L3 推理 + L2 回退 | ⬜ |
-| L3-E | API 扩展 + 版本查询 | ⬜ |
-| L3-F | 验收报告 + 全量 pytest | ⬜ |
+| Task | 内容 | 状态 | 关键文件 |
+|:---:|---|:---:|---|
+| L3-D.1–D.4 | L3 推理 + 传播路径 + L2 回退 | ✅ | `l3_inference.py`、`service.py` |
+| L3-E.1–E.5 | `model_level` API + bayesian-versions | ✅ | `schemas/bayesian.py`、`endpoints/config.py` |
+| L3-F.1–F.5 | 集成测试 + 验收报告 | ✅ | `test_bayesian_l3.py`、`PHASE5_BAYESIAN_L3_ACCEPTANCE.md` |

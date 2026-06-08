@@ -14,8 +14,8 @@ if str(BACKEND_ROOT) not in sys.path:
 from app.infrastructure.database.session import SessionLocal
 from app.services.bayesian.dataset import load_l3_training_rows
 from app.services.bayesian.gate import check_l3_case_gate
+from app.domain.bayesian.cpt import DEFAULT_CPT_LEARNED_PATH
 from app.services.bayesian.training import (
-    DEFAULT_CPT_LEARNED_PATH,
     build_training_rows_from_seeds,
     learn_cpt_from_training_rows,
     write_cpt_learned_file,

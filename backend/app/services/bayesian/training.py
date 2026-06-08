@@ -7,12 +7,17 @@ import json
 from pathlib import Path
 from typing import Any
 
-from app.domain.bayesian.cpt import FACTOR_STATES, OUTCOME_STATES, load_cpt_prior
+from app.domain.bayesian.cpt import (
+    DEFAULT_CPT_LEARNED_PATH,
+    FACTOR_STATES,
+    OUTCOME_STATES,
+    cpt_learned_available,
+    load_cpt_learned,
+    load_cpt_prior,
+)
 from app.domain.bayesian.prior import ACCIDENT_OUTCOMES, RISK_FACTORS
 from app.domain.bayesian.structure import BayesianNetworkStructure, load_network_structure
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
-DEFAULT_CPT_LEARNED_PATH = REPO_ROOT / "config" / "bayesian" / "cpt_learned.json"
 DEFAULT_MODEL_VERSION = "bayesian-l3-v1.0.0"
 
 
@@ -133,11 +138,6 @@ def write_cpt_learned_file(
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return target
-
-
-def load_cpt_learned(path: Path | None = None) -> dict[str, Any]:
-    target = path or DEFAULT_CPT_LEARNED_PATH
-    return json.loads(target.read_text(encoding="utf-8"))
 
 
 def build_training_rows_from_seeds() -> list[dict[str, Any]]:

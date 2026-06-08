@@ -5,6 +5,7 @@ from __future__ import annotations
 import random
 from typing import Any
 
+from app.domain.bayesian.outcome_probs import predict_outcome_distribution as _predict_from_labels
 from app.domain.bayesian.prior import ACCIDENT_OUTCOMES, RISK_FACTORS
 from app.domain.bayesian.structure import BayesianNetworkStructure, load_network_structure
 from app.services.bayesian.training import learn_cpt_from_training_rows
@@ -48,42 +49,18 @@ def split_training_rows(
     return train, holdout
 
 
-def _outcome_likelihood_for_case(
-    row: dict[str, Any],
-    *,
-    outcome_id: str,
-    cpt_payload: dict[str, Any],
-    structure: BayesianNetworkStructure,
-) -> float:
-    node = cpt_payload["nodes"][outcome_id]
-    parents = structure.parents_of(outcome_id)
-    factor_labels = row.get("factor_labels", {})
-    if parents:
-        active_count = sum(1 for parent_id in parents if int(factor_labels.get(parent_id, 0)) == 1)
-        bucket_key = f"active_parent_count:{active_count}"
-        conditional = node.get("conditional_probabilities", {})
-        if bucket_key in conditional:
-            return float(conditional[bucket_key]["likely"])
-    return float(node["probabilities"]["likely"])
-
-
 def predict_outcome_distribution(
     row: dict[str, Any],
     *,
     cpt_payload: dict[str, Any],
     structure: BayesianNetworkStructure,
 ) -> dict[str, float]:
-    scores = {
-        outcome.outcome_id: _outcome_likelihood_for_case(
-            row,
-            outcome_id=outcome.outcome_id,
-            cpt_payload=cpt_payload,
-            structure=structure,
-        )
-        for outcome in ACCIDENT_OUTCOMES
+    factor_labels = {
+        factor_id: int(value)
+        for factor_id, value in row.get("factor_labels", {}).items()
+        if int(value) == 1
     }
-    total = sum(scores.values()) or 1.0
-    return {outcome_id: round(score / total, 6) for outcome_id, score in scores.items()}
+    return _predict_from_labels(factor_labels, cpt_payload=cpt_payload, structure=structure)
 
 
 def _parent_score(

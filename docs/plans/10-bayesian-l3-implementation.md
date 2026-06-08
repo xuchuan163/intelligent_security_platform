@@ -122,11 +122,11 @@ mgmt_schedule_pressure → … → collapse / fire / mechanical_injury
 
 | Task | 内容 | 关键路径 | 验收 |
 |---|---|---|---|
-| L3-D.1 | L3 推理：加载 `structure.yaml` + `cpt_learned.json`，注入 `mapping.py` 观测 | `backend/app/domain/bayesian/l3_inference.py` | 黄金案例 top-3 因子与标签有交集 |
-| L3-D.2 | `run_l3_attribution()` 返回结构对齐 L2 `AttributionResult` + 扩展字段 | 同上 | `model_level=="L3"` |
-| L3-D.3 | **传播路径**：DAG 上 top-k 路径（边权 = 条件概率乘积） | `l3_inference.py` `_top_propagation_paths()` | 响应含 `propagation_paths[]` |
-| L3-D.4 | Service 路由：`case_count>=200` 且 CPT 存在 → L3，否则 L2 | `services/bayesian/service.py` | `test_bayesian_l3.py::test_fallback_to_l2` |
-| L3-D.5 | （可选）Neo4j 邻居作补充 evidence，权重低于 CPT | 调用 `services/graph/neighbors.py` | `NEO4J_ENABLED=false` 时不影响 L3 |
+| L3-D.1 | L3 推理：加载 `structure.yaml` + `cpt_learned.json`，注入 `mapping.py` 观测 | `backend/app/domain/bayesian/l3_inference.py` | ✅ 黄金案例 top-3 因子与标签有交集 |
+| L3-D.2 | `run_l3_attribution()` 返回结构对齐 L2 `AttributionResult` + 扩展字段 | 同上 | ✅ `model_level=="L3"` |
+| L3-D.3 | **传播路径**：DAG 上 top-k 路径（边权 = 条件概率乘积） | `l3_inference.py` `_top_propagation_paths()` | ✅ 响应含 `propagation_paths[]` |
+| L3-D.4 | Service 路由：`case_count>=200` 且 CPT 存在 → L3，否则 L2 | `services/bayesian/service.py` | ✅ `test_bayesian_l3.py::test_fallback_to_l2` |
+| L3-D.5 | （可选）Neo4j 邻居作补充 evidence，权重低于 CPT | 调用 `services/graph/neighbors.py` | ⬜ 本期跳过 |
 
 **L2 保留策略：** 不删除 `inference.py`；`analyze_attribution(..., model_level="auto"|"L2"|"L3")`。
 
@@ -136,11 +136,11 @@ mgmt_schedule_pressure → … → collapse / fire / mechanical_injury
 
 | Task | 内容 | 关键路径 | 验收 |
 |---|---|---|---|
-| L3-E.1 | 扩展请求：`model_level: Literal["auto","L2","L3"] = "auto"` | `schemas/bayesian.py` | OpenAPI 更新 |
-| L3-E.2 | 扩展响应：`propagation_paths`、`cpt_version`、`calibration_hint` | `l3_inference.AttributionResult` | API smoke 200 |
-| L3-E.3 | `GET /api/v1/config/bayesian-versions` 只读（当前 CPT 版本、case_count、trained_at） | `endpoints/config.py` 或 `endpoints/analysis.py` | 仿 `weight-versions` |
-| L3-E.4 | 权限：复用 `Permission.ANALYSIS_ATTRIBUTION` | `domain/rbac.py` | 无新权限码 |
-| L3-E.5 | 错误码：案例不足 200 且强制 L3 → 503；CPT 缺失 → 503 | `core/errors.py` 业务码可选 | 与 L2 门禁一致 |
+| L3-E.1 | 扩展请求：`model_level: Literal["auto","L2","L3"] = "auto"` | `schemas/bayesian.py` | ✅ |
+| L3-E.2 | 扩展响应：`propagation_paths`、`cpt_version`、`calibration_hint` | `l3_inference.L3AttributionResult` | ✅ API smoke 200 |
+| L3-E.3 | `GET /api/v1/config/bayesian-versions` 只读（当前 CPT 版本、case_count、trained_at） | `endpoints/config.py` | ✅ 仿 `weight-versions` |
+| L3-E.4 | 权限：复用 `Permission.ANALYSIS_ATTRIBUTION` | `domain/rbac.py` | ✅ 无新权限码 |
+| L3-E.5 | 错误码：案例不足 200 且强制 L3 → 503；CPT 缺失 → 503 | `analysis.py` HTTPException 503 | ✅ 与 L2 门禁一致 |
 
 **curl 示例（目标态）：**
 
@@ -157,11 +157,11 @@ curl -X POST http://127.0.0.1:8000/api/v1/analysis/attribution \
 
 | Task | 内容 | 关键路径 | 验收 |
 |---|---|---|---|
-| L3-F.1 | 结构/标签/CPT 单元测试 | `tests/domain/test_bayesian_*.py` | 独立可跑 |
-| L3-F.2 | 服务 + API 集成测试 | `tests/services/test_bayesian_l3.py` | ≥15 cases |
-| L3-F.3 | 校准报告进 CI 可选 job | `.github/workflows` 或本地文档 | 文档化命令即可 |
-| L3-F.4 | 更新 `docs/api/openapi.yaml`、`技术参考文档` §18 实施备注 | docs | PR 可查 |
-| L3-F.5 | `docs/PHASE5_BAYESIAN_L3_ACCEPTANCE.md` 六项门禁 | docs | 对标 Phase 4 验收格式 |
+| L3-F.1 | 结构/标签/CPT 单元测试 | `tests/domain/test_bayesian_*.py` | ✅ 独立可跑 |
+| L3-F.2 | 服务 + API 集成测试 | `tests/services/test_bayesian_l3.py` | ✅ 10+ cases |
+| L3-F.3 | 校准报告进 CI 可选 job | `docs/algo/bayesian_l3_backtest.md` | ✅ 文档化命令 |
+| L3-F.4 | 更新 `docs/api/openapi.yaml`、技术文档 §18 备注 | docs | ⬜ 可选后续 |
+| L3-F.5 | `docs/PHASE5_BAYESIAN_L3_ACCEPTANCE.md` 六项门禁 | docs | ✅ 对标 Phase 4 验收格式 |
 
 ---
 

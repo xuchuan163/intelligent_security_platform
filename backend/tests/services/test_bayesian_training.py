@@ -12,10 +12,10 @@ from app.services.bayesian.calibration import (
     run_l3_calibration,
     split_training_rows,
 )
+from app.domain.bayesian.cpt import load_cpt_learned
 from app.services.bayesian.training import (
     build_training_rows_from_seeds,
     learn_cpt_from_training_rows,
-    load_cpt_learned,
     write_cpt_learned_file,
 )
 from app.services.cases.seed_cases import ACCIDENT_CASE_SEEDS

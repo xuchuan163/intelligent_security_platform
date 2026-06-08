@@ -71,7 +71,7 @@
 | 智能 | 记忆、NL2SQL 门、Agent DAG、隐患顾问 | `/api/v1/agent/*`、`/api/v1/memory/*` |
 | 四库 | Redis 缓存、Milvus RAG、Neo4j 邻居（可选） | `/api/v1/rag/*`、`/api/v1/graph/*` |
 | 认证 | JWT、RBAC、OAuth 占位 | `/api/v1/auth/*` |
-| 算法 | 案例回测、贝叶斯 L2 归因、**L3 结构/标注（Sprint 1）** | `/api/v1/analysis/attribution`、`config/bayesian/` |
+| 算法 | 案例回测、贝叶斯 L2/L3 归因（含传播路径） | `/api/v1/analysis/attribution`、`/api/v1/config/bayesian-versions` |
 | 前端 | 驾驶舱、画像、工单、Agent、报告等 | `frontend/` `npm run build` |
 
 ---
@@ -127,4 +127,4 @@ curl -X POST http://127.0.0.1:8000/api/v1/analysis/attribution \
 - **Phase 5 L3** 在 `feature/phase5-bayesian-l3` 分支按 Sprint 推进。
 - 所有 Agent / 归因 / 回测输出均须人工复核（`AGENTS.md` §5.4）。
 
-**项目状态：一期已闭环；Phase 5 L3 Sprint 1 实施中。**
+**项目状态：一期已闭环；Phase 5 贝叶斯 L3 核心里程碑已完成（见 `docs/PHASE5_BAYESIAN_L3_ACCEPTANCE.md`）。**
