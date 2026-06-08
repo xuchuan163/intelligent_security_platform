@@ -1,6 +1,7 @@
-﻿.venv/
+.venv/
 __pycache__/
 .pytest_cache/
+backend/.pytest_tmp/
 .run-logs/
 *.pyc
 node_modules/
@@ -10,3 +11,5 @@ backend/.coverage
 backend/htmlcov/
 frontend/.vite/
 .env
+uploads/
+backend/uploads/

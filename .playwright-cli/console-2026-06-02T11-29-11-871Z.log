@@ -33,3 +33,85 @@
 [ 5774935ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
 [ 7234362ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:963
 [ 7236423ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[ 9309668ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:963
+[ 9311731ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[11867250ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:963
+[11946321ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:963
+[11948391ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[11951448ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[11954522ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[11957580ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[11960643ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[11963698ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[11966747ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[11969794ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[11972853ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[11975924ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[11978979ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[11982044ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[11985119ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[11988174ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[11991229ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[11994287ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[11997347ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:5173/@vite/client:1034
+[104453039ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:963
+[104453072ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_NETWORK_IO_SUSPENDED @ http://127.0.0.1:5173/@vite/client:1034
+[189004170ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:963
+[189004179ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_NETWORK_IO_SUSPENDED @ http://127.0.0.1:5173/@vite/client:1034
+[251319445ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:5173/api/v1/auth/me:0
+[251378925ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:5173/api/v1/auth/me:0
+[258817094ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:963
+[258817104ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_NETWORK_IO_SUSPENDED @ http://127.0.0.1:5173/@vite/client:1034
+[259756497ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:5173/api/v1/auth/me:0
+[277258421ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:963
+[277258439ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_NETWORK_IO_SUSPENDED @ http://127.0.0.1:5173/@vite/client:1034
+[277261101ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:5173/api/v1/auth/me:0
+[277325664ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:963
+[277325684ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_NETWORK_IO_SUSPENDED @ http://127.0.0.1:5173/@vite/client:1034
+[277328729ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:5173/api/v1/auth/me:0
+[277394604ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:963
+[277394608ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_NETWORK_IO_SUSPENDED @ http://127.0.0.1:5173/@vite/client:1034
+[277399862ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:5173/api/v1/auth/me:0
+[279205683ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:963
+[279205686ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_NETWORK_IO_SUSPENDED @ http://127.0.0.1:5173/@vite/client:1034
+[280455814ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:5173/api/v1/auth/me:0
+[280456082ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:963
+[280456166ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_NETWORK_IO_SUSPENDED @ http://127.0.0.1:5173/@vite/client:1034
+[312025754ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:5173/api/v1/auth/me:0
+[319488313ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:5173/src/workOrderFlow.ts?t=1780719240078:0
+[319488314ms] [ERROR] [vite] Failed to reload /src/pages/WorkOrdersPage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[319520574ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:5173/src/workOrderFlow.ts?t=1780719272363:0
+[319520575ms] [ERROR] [vite] Failed to reload /src/pages/WorkOrdersPage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[319539857ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:5173/src/components/RiskBadge.vue?t=1780719291624:0
+[319539857ms] [ERROR] [vite] Failed to reload /src/components/RiskBadge.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[319539890ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:5173/src/pages/DashboardPage.vue?t=1780719291624:0
+[319539890ms] [ERROR] [vite] Failed to reload /src/pages/DashboardPage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[319563798ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:5173/src/pages/DashboardPage.vue?t=1780719315591:0
+[319563799ms] [ERROR] [vite] Failed to reload /src/pages/DashboardPage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[319563801ms] [ERROR] [vite] Failed to reload /src/pages/WorkerProfilePage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[319563802ms] [ERROR] [vite] Failed to reload /src/pages/ProjectProfilePage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[319563802ms] [ERROR] [vite] Failed to reload /src/pages/SubcontractorProfilePage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[319563802ms] [ERROR] [vite] Failed to reload /src/pages/WorkOrdersPage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[319563826ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:5173/src/api/client.ts?t=1780719315591:0
+[319563826ms] [ERROR] [vite] Failed to reload /src/pages/AssistantPage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[319563826ms] [ERROR] [vite] Failed to reload /src/App.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[319610471ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:5173/src/pages/WorkOrdersPage.vue?t=1780719362301:0
+[319610471ms] [ERROR] [vite] Failed to reload /src/pages/WorkOrdersPage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[319714552ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:5173/src/pages/WorkOrdersPage.vue?t=1780719466284:0
+[319714552ms] [ERROR] [vite] Failed to reload /src/pages/WorkOrdersPage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[320027473ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:5173/src/pages/DashboardPage.vue?t=1780719779283:0
+[320027473ms] [ERROR] [vite] Failed to reload /src/pages/DashboardPage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[320027474ms] [ERROR] [vite] Failed to reload /src/pages/WorkerProfilePage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[320027475ms] [ERROR] [vite] Failed to reload /src/pages/ProjectProfilePage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[320027475ms] [ERROR] [vite] Failed to reload /src/pages/SubcontractorProfilePage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[320027488ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:5173/src/api/client.ts?t=1780719779283:0
+[320027488ms] [ERROR] [vite] Failed to reload /src/App.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[320027488ms] [ERROR] [vite] Failed to reload /src/pages/AssistantPage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[320049985ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:5173/src/pages/WorkOrdersPage.vue?t=1780719801782:0
+[320049986ms] [ERROR] [vite] Failed to reload /src/pages/WorkOrdersPage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[320067834ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:5173/src/pages/WorkOrdersPage.vue?t=1780719819635:0
+[320067835ms] [ERROR] [vite] Failed to reload /src/pages/WorkOrdersPage.vue. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5173/@vite/client:881
+[323425131ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:963
+[323425137ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:5173/' failed: Error in connection establishment: net::ERR_NETWORK_IO_SUSPENDED @ http://127.0.0.1:5173/@vite/client:1034
+[325225995ms] [ERROR] Failed to load resource: net::ERR_NETWORK_IO_SUSPENDED @ http://127.0.0.1:5173/@vite/client:0
+[325225996ms] [ERROR] Failed to load resource: net::ERR_NETWORK_IO_SUSPENDED @ http://127.0.0.1:5173/src/main.ts?t=1780719841722:0

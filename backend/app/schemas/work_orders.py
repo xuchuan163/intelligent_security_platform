@@ -22,6 +22,11 @@ class WorkOrderCreate(BaseModel):
 
 class WorkOrderStatusUpdate(BaseModel):
     action: str
+    comment: str | None = None
+    assignee_user_id: str | None = None
+    due_time: datetime | None = None
+    reject_reason: str | None = None
+    attachments: dict[str, Any] | None = None
 
 
 class WorkOrderOut(BaseModel):

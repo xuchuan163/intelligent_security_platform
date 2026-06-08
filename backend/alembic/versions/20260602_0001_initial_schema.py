@@ -1,4 +1,14 @@
-﻿"""initial schema - all core tables for MVP"""
+"""initial schema - all core tables for MVP
+
+Revision ID: 20260602_0001
+Revises:
+Create Date: 2026-06-02
+"""
+
+from alembic import op
+
+from app.infrastructure.database.session import Base
+from app.infrastructure.database import models  # noqa: F401
 
 revision = "20260602_0001"
 down_revision = None
@@ -7,8 +17,10 @@ depends_on = None
 
 
 def upgrade() -> None:
-    pass  # Use autogenerate: alembic revision --autogenerate -m "initial"
+    bind = op.get_bind()
+    Base.metadata.create_all(bind=bind)
 
 
 def downgrade() -> None:
-    pass
+    bind = op.get_bind()
+    Base.metadata.drop_all(bind=bind)

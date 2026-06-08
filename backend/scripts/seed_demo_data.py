@@ -1,9 +1,12 @@
-﻿"""Seed demo data for the CSCEC Smart Safety Platform MVP."""
+"""Seed demo data for the CSCEC Smart Safety Platform MVP."""
 
 import datetime
 import random
 import sys
 from pathlib import Path
+from typing import Any
+
+import yaml
 
 # Allow this script to run directly from PyCharm/main.py while still importing
 # the backend package as ``app``.
@@ -17,25 +20,212 @@ from app.infrastructure.database.models import (
     Tenant, Project, Subcontractor, Worker, Hazard, Equipment,
     ProjectRiskProfile, WorkerRiskProfile, SubcontractorRiskProfile,
     RuleTriggerLog, SafetyWorkOrder, MetricCatalog,
+    ProjectUser, WorkOrderFlowLog,
 )
 from app.services.profiles.calculator import (
     calculate_project_profile, calculate_worker_profile, calculate_subcontractor_profile,
 )
+from app.services.agents.prompt_registry import sync_agent_prompt_versions
+from app.services.auth.seed_rbac import seed_rbac_foundation
+from app.services.cases.seed_cases import seed_accident_cases
+
+ROOT_DIR = BACKEND_ROOT.parent
+METRIC_CATALOG_PATH = ROOT_DIR / "config" / "metrics" / "catalog.yaml"
 
 
 def seed_metrics(db: Session) -> None:
-    metrics = [
-        {"metric_code": "PROJECT_RISK_SCORE", "metric_name": "项目风险分", "business_definition": "项目基础风险分 * 动态修正 + 强规则触发"},
-        {"metric_code": "PROJECT_HAZARD_OVERDUE_RATE", "metric_name": "隐患整改超期率", "business_definition": "超期未整改隐患数 / 应整改隐患数"},
-        {"metric_code": "PROJECT_MAJOR_HAZARD_COUNT", "metric_name": "重大隐患数量", "business_definition": "周期内重大隐患数量"},
-        {"metric_code": "EQUIPMENT_OVERDUE_RATE", "metric_name": "设备超期未检率", "business_definition": "超期未检设备数 / 应检设备数"},
-        {"metric_code": "WORKER_HIGH_RISK_RATIO", "metric_name": "高风险工人占比", "business_definition": "高风险工人数 / 在场工人数"},
-        {"metric_code": "SUB_OVERDUE_RECT_RATE", "metric_name": "分包商整改超期率", "business_definition": "分包商责任超期隐患 / 分包商责任隐患"},
-        {"metric_code": "SCHEDULE_PRESSURE_INDEX", "metric_name": "工期压力指数", "business_definition": "计划进度与实际进度偏差综合计算"},
-        {"metric_code": "TRAINING_PASS_RATE", "metric_name": "培训合格率", "business_definition": "培训合格人数 / 应培训人数"},
+    payload = yaml.safe_load(METRIC_CATALOG_PATH.read_text(encoding="utf-8")) or {}
+    metrics: list[dict[str, Any]] = payload.get("metrics", [])
+
+    for metric in metrics:
+        row = db.query(MetricCatalog).filter(MetricCatalog.metric_code == metric["metric_code"]).first()
+        if row is None:
+            row = MetricCatalog(metric_code=metric["metric_code"], metric_name=metric["metric_name"], business_definition=metric["business_definition"])
+            db.add(row)
+        for field, value in metric.items():
+            setattr(row, field, value)
+    db.commit()
+
+
+def seed_work_order_workflow_demo(db: Session) -> None:
+    """Seed P002 role accounts and a deterministic hazard workflow demo order."""
+
+    today = datetime.date.today()
+    project = db.query(Project).filter(Project.project_id == "P002").first()
+    if project is None:
+        project = Project(
+            project_id="P002",
+            tenant_id="CSCEC",
+            company_id="CSCEC",
+            org_path="CSCEC/CSCEC-8B/EAST-REGION/P002",
+            project_name="武汉长江中心",
+            project_type="housing",
+            construction_phase="foundation",
+            region="华中",
+            status="active",
+            start_date=today - datetime.timedelta(days=365),
+            end_date=today + datetime.timedelta(days=365),
+        )
+        db.add(project)
+        db.flush()
+
+    roles = [
+        {
+            "user_id": "U-GC-01",
+            "user_name": "李安全",
+            "role_code": "gc_safety_officer",
+            "subcontractor_id": None,
+        },
+        {
+            "user_id": "U-DIR-01",
+            "user_name": "王总监",
+            "role_code": "safety_director",
+            "subcontractor_id": None,
+        },
+        {
+            "user_id": "U-SUB-S003",
+            "user_name": "陈分包",
+            "role_code": "sub_safety_officer",
+            "subcontractor_id": "S003",
+        },
     ]
-    for m in metrics:
-        db.add(MetricCatalog(**m))
+    for payload in roles:
+        role = (
+            db.query(ProjectUser)
+            .filter(
+                ProjectUser.project_id == "P002",
+                ProjectUser.user_id == payload["user_id"],
+                ProjectUser.role_code == payload["role_code"],
+            )
+            .first()
+        )
+        if role is None:
+            role = ProjectUser(
+                tenant_id=project.tenant_id,
+                company_id=project.company_id,
+                org_path=project.org_path,
+                project_id="P002",
+                user_id=payload["user_id"],
+                role_code=payload["role_code"],
+                user_name=payload["user_name"],
+            )
+            db.add(role)
+        role.tenant_id = project.tenant_id
+        role.company_id = project.company_id
+        role.org_path = project.org_path
+        role.user_name = payload["user_name"]
+        role.subcontractor_id = payload["subcontractor_id"]
+        role.status = "active"
+
+    attachments = {
+        "items": [
+            {
+                "file_id": "F-DEMO-P002-DISCOVERY",
+                "phase": "discovery",
+                "content_type": "image/jpeg",
+                "file_name": "demo-p002-hazard.jpg",
+                "url": "/api/v1/files/F-DEMO-P002-DISCOVERY",
+                "sha256": "demo-seed-placeholder",
+                "size_bytes": 0,
+                "uploaded_by": "U-GC-01",
+                "uploaded_at": datetime.datetime.utcnow().isoformat(),
+            }
+        ]
+    }
+    hazard = db.query(Hazard).filter(Hazard.hazard_id == "H-DEMO-P002-001").first()
+    if hazard is None:
+        hazard = Hazard(
+            hazard_id="H-DEMO-P002-001",
+            tenant_id=project.tenant_id,
+            company_id=project.company_id,
+            org_path=project.org_path,
+            project_id="P002",
+            subcontractor_id="S003",
+            hazard_type="临边防护",
+            hazard_level="major",
+            description="武汉长江中心基坑东侧临边防护缺失，存在高处坠落风险。",
+            status="open",
+            due_date=today + datetime.timedelta(days=7),
+            is_major=True,
+            discovered_by_user_id="U-GC-01",
+            location="基坑东侧",
+            attachments=attachments,
+            work_order_id="WO-DEMO-P002-001",
+        )
+        db.add(hazard)
+    else:
+        hazard.tenant_id = project.tenant_id
+        hazard.company_id = project.company_id
+        hazard.org_path = project.org_path
+        hazard.project_id = "P002"
+        hazard.subcontractor_id = "S003"
+        hazard.status = "open"
+        hazard.attachments = attachments
+        hazard.work_order_id = "WO-DEMO-P002-001"
+
+    order = db.query(SafetyWorkOrder).filter(SafetyWorkOrder.work_order_id == "WO-DEMO-P002-001").first()
+    if order is None:
+        order = SafetyWorkOrder(
+            work_order_id="WO-DEMO-P002-001",
+            tenant_id=project.tenant_id,
+            company_id=project.company_id,
+            org_path=project.org_path,
+            work_order_type="hazard_rectification",
+            source_type="hazard",
+            source_id="H-DEMO-P002-001",
+            project_id="P002",
+            subcontractor_id="S003",
+            title="武汉长江中心临边防护整改演示单",
+            description="由总包安全员上传隐患后自动创建，供审批派发、分包整改、总包验收演示。",
+            priority="high",
+            status="pending_confirm",
+            due_time=datetime.datetime.combine(today + datetime.timedelta(days=7), datetime.time(hour=18)),
+            attachments=attachments,
+        )
+        db.add(order)
+    else:
+        order.tenant_id = project.tenant_id
+        order.company_id = project.company_id
+        order.org_path = project.org_path
+        order.work_order_type = "hazard_rectification"
+        order.source_type = "hazard"
+        order.source_id = "H-DEMO-P002-001"
+        order.project_id = "P002"
+        order.subcontractor_id = "S003"
+        order.title = "武汉长江中心临边防护整改演示单"
+        order.description = "由总包安全员上传隐患后自动创建，供审批派发、分包整改、总包验收演示。"
+        order.priority = "high"
+        order.status = "pending_confirm"
+        order.due_time = datetime.datetime.combine(today + datetime.timedelta(days=7), datetime.time(hour=18))
+        order.attachments = attachments
+
+    flow_log = (
+        db.query(WorkOrderFlowLog)
+        .filter(
+            WorkOrderFlowLog.work_order_id == "WO-DEMO-P002-001",
+            WorkOrderFlowLog.action == "create",
+        )
+        .first()
+    )
+    if flow_log is None:
+        flow_log = WorkOrderFlowLog(
+            work_order_id="WO-DEMO-P002-001",
+            from_status=None,
+            to_status="pending_confirm",
+            action="create",
+            operator_user_id="U-GC-01",
+            operator_role="gc_safety_officer",
+            comment="演示 seed 自动创建整改工单",
+            attachments=attachments,
+        )
+        db.add(flow_log)
+    else:
+        flow_log.from_status = None
+        flow_log.to_status = "pending_confirm"
+        flow_log.operator_user_id = "U-GC-01"
+        flow_log.operator_role = "gc_safety_officer"
+        flow_log.attachments = attachments
+
     db.commit()
 
 
@@ -44,6 +234,18 @@ def seed_demo_data() -> None:
     db: Session = SessionLocal()
 
     try:
+        if db.query(Tenant).filter(Tenant.tenant_id == "CSCEC").first() is not None:
+            seed_metrics(db)
+            seed_accident_cases(db)
+            seed_work_order_workflow_demo(db)
+            sync_agent_prompt_versions(db)
+            print("=== Demo data already exists; seed skipped ===")
+            print("=== Metric catalog synchronized ===")
+            print("=== Accident cases synchronized ===")
+            print("=== Work order workflow demo synchronized ===")
+            print("=== Agent prompt versions synchronized ===")
+            return
+
         today = datetime.date.today()
 
         # --- Tenant ---
@@ -136,6 +338,9 @@ def seed_demo_data() -> None:
                 major_hazard_overdue_count=major_overdue,
                 equipment_overdue_count=eq_overdue,
                 schedule_pressure_index=proj.schedule_pressure_index,
+                project_type=proj.project_type,
+                night_shift_days=proj.night_shift_days,
+                cross_operation_count=proj.cross_operation_count,
             )
             db.add(ProjectRiskProfile(
                 project_id=proj.project_id, tenant_id="CSCEC", org_path=proj.org_path, calc_date=today,
@@ -224,6 +429,10 @@ def seed_demo_data() -> None:
 
         # --- Metric Catalog ---
         seed_metrics(db)
+        seed_accident_cases(db)
+        seed_work_order_workflow_demo(db)
+        seed_rbac_foundation(db, tenant_id="CSCEC", company_id="CSCEC")
+        sync_agent_prompt_versions(db)
 
         db.commit()
         print("=== Seed data inserted successfully ===")
@@ -234,7 +443,7 @@ def seed_demo_data() -> None:
         print(f"  Hazards: {len(hazards_data)}")
         print(f"  Equipment: {len(equipment_data)}")
         print(f"  Work Orders: {len(work_orders_data)}")
-        print(f"  Metrics: 8")
+        print(f"  Metrics: {db.query(MetricCatalog).count()}")
 
     except Exception as e:
         db.rollback()
