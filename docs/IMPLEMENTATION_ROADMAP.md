@@ -20,7 +20,7 @@ Phase 2 Agent 增强     ██████████████████�
 Phase 3 四库与集成     ████████████████████  100%  里程碑门禁已通过 ← 当前
 Phase 4 算法与推广     ████████████████████ 100%  已完成
 项目收口（一期）       ████████████████████ 100%  闭环成立（`docs/PROJECT_CLOSURE.md`）
-Phase 5 贝叶斯 L3      ████████░░░░░░░░░░░░  40%  Sprint 1：L3-0/A/B 实施中 ← 当前
+Phase 5 贝叶斯 L3      ████████████░░░░░░░░  60%  Sprint 2：L3-C 已完成，L3-D/E/F 待启动 ← 当前
 ```
 
 ---
@@ -662,11 +662,20 @@ flowchart TD
 | L3-B.5 | 黄金集 50 条 | ✅ | `tests/datasets/bayesian_l3_train_50.jsonl` |
 | L3-B.6 | 种子扩至 200+ | ✅ | `seed_cases_l3_bulk.py` |
 
-### Sprint 2/3（待启动）
+### Sprint 2 — L3-C
+
+| Task | 内容 | 状态 | 关键文件 |
+|:---:|---|:---:|---|
+| L3-C.1 | Laplace MLE CPT 训练 | ✅ | `services/bayesian/training.py` |
+| L3-C.2 | 训练 CLI | ✅ | `scripts/train_bayesian_l3.py` |
+| L3-C.3 | 模型版本 metadata | ✅ | `config/bayesian/cpt_learned.json` |
+| L3-C.4 | 校准指标 | ✅ | `services/bayesian/calibration.py` |
+| L3-C.5 | 校准 CLI + 报告 | ✅ | `scripts/run_bayesian_l3_backtest.py` |
+
+### Sprint 3（待启动）
 
 | 子阶段 | 内容 | 状态 |
 |:---:|---|:---:|
-| L3-C | CPT 训练 + 校准回测 | ⬜ |
 | L3-D | L3 推理 + L2 回退 | ⬜ |
 | L3-E | API 扩展 + 版本查询 | ⬜ |
 | L3-F | 验收报告 + 全量 pytest | ⬜ |

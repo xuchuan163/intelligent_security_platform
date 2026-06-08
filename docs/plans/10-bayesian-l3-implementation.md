@@ -108,11 +108,11 @@ mgmt_schedule_pressure → … → collapse / fire / mechanical_injury
 
 | Task | 内容 | 关键路径 | 验收 |
 |---|---|---|---|
-| L3-C.1 | 计数器 + Laplace 平滑 MLE：`P(child|parents)` | `backend/app/services/bayesian/training.py` | 黄金 50 条可复现 CPT |
-| L3-C.2 | 训练 CLI：从 DB 拉案例 → 写 CPT JSON | `backend/scripts/train_bayesian_l3.py` | `--tenant-id CSCEC` 产出 `cpt_learned.json` |
-| L3-C.3 | 模型版本：`bayesian-l3-v{semver}` + `trained_at` + `case_count` | `config/bayesian/cpt_learned.json` metadata | 与 `GET /config/weight-versions` 风格一致 |
-| L3-C.4 | 校准回测：holdout 因子命中率、结果 Brier 分 | `backend/app/services/bayesian/calibration.py` | 报告可生成 |
-| L3-C.5 | 校准 CLI + 报告 | `backend/scripts/run_bayesian_l3_backtest.py` → `docs/algo/bayesian_l3_backtest.md` | `factor_hit_rate ≥ 0.55`（评审可调） |
+| L3-C.1 | 计数器 + Laplace 平滑 MLE：`P(child|parents)` | `backend/app/services/bayesian/training.py` | ✅ 黄金 50 条可复现 CPT |
+| L3-C.2 | 训练 CLI：从 DB 拉案例 → 写 CPT JSON | `backend/scripts/train_bayesian_l3.py` | ✅ `--from-seeds` / `--tenant-id CSCEC` 产出 `cpt_learned.json` |
+| L3-C.3 | 模型版本：`bayesian-l3-v{semver}` + `trained_at` + `case_count` | `config/bayesian/cpt_learned.json` metadata | ✅ 与 `GET /config/weight-versions` 风格一致 |
+| L3-C.4 | 校准回测：holdout 因子命中率、结果 Brier 分 | `backend/app/services/bayesian/calibration.py` | ✅ 报告可生成 |
+| L3-C.5 | 校准 CLI + 报告 | `backend/scripts/run_bayesian_l3_backtest.py` → `docs/algo/bayesian_l3_backtest.md` | ✅ `factor_hit_rate ≥ 0.55` |
 
 **依赖建议：** `numpy` 即可；若引入 `pgmpy`，需在 `pyproject.toml` 单独 optional extra `bayesian-l3`，MVP 环境默认不装。
 
