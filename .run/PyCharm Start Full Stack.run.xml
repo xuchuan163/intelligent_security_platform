@@ -1,7 +1,10 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="PyCharm Start Full Stack" type="PythonConfigurationType" factoryName="Python">
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
-    <option name="PARAMETERS" value="--backend-port 8011" />
+    <option name="PARAMETERS" value="--backend-port 8011 --kill-ports" />
+    <option name="EMULATE_TERMINAL" value="true" />
+    <option name="SDK_HOME" value="$PROJECT_DIR$/.venv/Scripts/python.exe" />
+    <option name="IS_MODULE_SDK" value="false" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />

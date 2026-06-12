@@ -1,4 +1,5 @@
 import importlib.util
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -31,13 +32,54 @@ def test_alembic_command_uses_console_entrypoint_when_available(tmp_path: Path) 
     assert command == [str(alembic), "upgrade", "head"]
 
 
-def test_alembic_command_requires_console_entrypoint(tmp_path: Path) -> None:
-    python = tmp_path / ".venv" / "Scripts" / "python.exe"
+def test_alembic_command_falls_back_to_module_invocation(tmp_path: Path) -> None:
+    python = tmp_path / "conda" / "python.exe"
     python.parent.mkdir(parents=True)
     python.write_text("", encoding="utf-8")
 
-    with pytest.raises(FileNotFoundError, match="Alembic executable not found"):
-        pycharm_start.alembic_upgrade_command(python)
+    command = pycharm_start.alembic_upgrade_command(python)
+
+    assert command == [str(python), "-m", "alembic", "upgrade", "head"]
+
+
+def test_resolve_python_interpreter_prefers_current_executable(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    venv_python = tmp_path / ".venv" / "Scripts" / "python.exe"
+    venv_python.parent.mkdir(parents=True)
+    venv_python.write_text("", encoding="utf-8")
+    current = tmp_path / "conda" / "python.exe"
+    current.parent.mkdir(parents=True)
+    current.write_text("", encoding="utf-8")
+
+    monkeypatch.setattr(pycharm_start, "VENV_PYTHON", venv_python)
+    monkeypatch.setattr(pycharm_start.sys, "executable", str(current))
+
+    assert pycharm_start.resolve_python_interpreter() == current.resolve()
+
+
+def test_resolve_python_interpreter_honors_project_python_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    chosen = tmp_path / "custom" / "python.exe"
+    chosen.parent.mkdir(parents=True)
+    chosen.write_text("", encoding="utf-8")
+    monkeypatch.setenv("PROJECT_PYTHON", str(chosen))
+
+    assert pycharm_start.resolve_python_interpreter() == chosen.resolve()
+
+
+def test_ensure_backend_dependencies_raises_clear_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    python = tmp_path / "python.exe"
+    python.write_text("", encoding="utf-8")
+
+    def fake_run(command: list[str], cwd: Path, capture_output: bool, text: bool) -> subprocess.CompletedProcess[str]:
+        assert command[0] == str(python)
+        return subprocess.CompletedProcess(command, 1, "", "No module named 'jwt'")
+
+    monkeypatch.setattr(pycharm_start.subprocess, "run", fake_run)
+
+    with pytest.raises(RuntimeError, match='pip install -e'):
+        pycharm_start.ensure_backend_dependencies(python)
 
 
 def test_npm_command_prefers_explicit_env_path(tmp_path: Path) -> None:
@@ -101,9 +143,54 @@ def test_ensure_ports_available_raises_when_port_is_busy(monkeypatch: pytest.Mon
 
 def test_ensure_ports_available_can_kill_busy_ports(monkeypatch: pytest.MonkeyPatch) -> None:
     killed: list[int] = []
-    monkeypatch.setattr(pycharm_start, "port_is_listening", lambda port: port == 8000 and not killed)
-    monkeypatch.setattr(pycharm_start, "kill_port", lambda port: killed.append(port))
+    state = {"busy": True}
+
+    def fake_listening(port: int) -> bool:
+        return port == 8000 and state["busy"]
+
+    def fake_kill(port: int) -> None:
+        killed.append(port)
+        if killed.count(8000) >= 2:
+            state["busy"] = False
+
+    monkeypatch.setattr(pycharm_start, "port_is_listening", fake_listening)
+    monkeypatch.setattr(pycharm_start, "kill_port", fake_kill)
+    monkeypatch.setattr(pycharm_start, "describe_port_blockers", lambda port: f"port {port}: pid(s) 1234")
 
     pycharm_start.ensure_ports_available([8000, 5173], kill_ports=True)
 
-    assert killed == [8000]
+    assert killed.count(8000) >= 2
+
+
+def test_default_kill_ports_enabled() -> None:
+    parser = pycharm_start.build_arg_parser()
+    args = parser.parse_args([])
+
+    assert args.kill_ports is True
+
+
+def test_no_kill_ports_flag_disables_cleanup() -> None:
+    parser = pycharm_start.build_arg_parser()
+    args = parser.parse_args(["--no-kill-ports"])
+
+    assert args.kill_ports is False
+
+
+def test_pids_from_net_tcp_connection_parses_powershell_output(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_run(command: list[str], capture_output: bool, text: bool, check: bool) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(command, 0, "25428\n18672\n", "")
+
+    monkeypatch.setattr(pycharm_start.subprocess, "run", fake_run)
+
+    assert pycharm_start._pids_from_net_tcp_connection(8011) == [18672, 25428]
+
+
+def test_pids_from_netstat_parses_windows_output(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_run(command: list[str], capture_output: bool, text: bool, encoding: str, errors: str, check: bool) -> subprocess.CompletedProcess[str]:
+        stdout = "  TCP    127.0.0.1:8011         0.0.0.0:0              LISTENING       25428\n"
+        return subprocess.CompletedProcess(command, 0, stdout, "")
+
+    monkeypatch.setattr(pycharm_start, "_pids_from_net_tcp_connection", lambda port: [])
+    monkeypatch.setattr(pycharm_start.subprocess, "run", fake_run)
+
+    assert pycharm_start.pids_holding_port(8011) == [25428]

@@ -95,4 +95,4 @@ npm run build
 | 4-E behavior_memory | 合规评审签字 | 本期不再实施 |
 | 4-F 视频 AI / BIM | 边缘/BIM 源接入 | 本期不再实施 |
 | 4-G 灾备实操 | 准生产双活 | 本期不再实施 |
-| 4-D L3 贝叶斯 | 案例 > 200 + 单独评审 | 本期不再实施 |
+| 4-D L3 贝叶斯 | 案例 > 200 + 单独评审 | **Phase 5 单独立项已完成**（见 `PHASE5_BAYESIAN_L3_ACCEPTANCE.md`） |

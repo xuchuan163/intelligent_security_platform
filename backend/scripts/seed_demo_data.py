@@ -28,6 +28,7 @@ from app.services.profiles.calculator import (
 from app.services.agents.prompt_registry import sync_agent_prompt_versions
 from app.services.auth.seed_rbac import seed_rbac_foundation
 from app.services.cases.seed_cases import seed_accident_cases
+from app.services.seed.mock_enrichment import seed_mock_enrichment
 
 ROOT_DIR = BACKEND_ROOT.parent
 METRIC_CATALOG_PATH = ROOT_DIR / "config" / "metrics" / "catalog.yaml"
@@ -238,12 +239,16 @@ def seed_demo_data() -> None:
             seed_metrics(db)
             seed_accident_cases(db)
             seed_work_order_workflow_demo(db)
+            seed_rbac_foundation(db, tenant_id="CSCEC", company_id="CSCEC")
             sync_agent_prompt_versions(db)
-            print("=== Demo data already exists; seed skipped ===")
+            enrichment = seed_mock_enrichment(db, tenant_id="CSCEC", company_id="CSCEC")
+            print("=== Demo data already exists; incremental enrichment applied ===")
             print("=== Metric catalog synchronized ===")
             print("=== Accident cases synchronized ===")
             print("=== Work order workflow demo synchronized ===")
+            print("=== RBAC foundation synchronized ===")
             print("=== Agent prompt versions synchronized ===")
+            print(f"=== Mock enrichment: {enrichment} ===")
             return
 
         today = datetime.date.today()
@@ -261,9 +266,13 @@ def seed_demo_data() -> None:
         projects = []
         for p in projects_data:
             proj = Project(
-                tenant_id="CSCEC", org_path=f"CSCEC/CSCEC-8B/EAST-REGION/{p['project_id']}",
-                region="华东", status="active",
-                **p, start_date=today - datetime.timedelta(days=365),
+                tenant_id="CSCEC",
+                company_id="CSCEC",
+                org_path=f"CSCEC/CSCEC-8B/EAST-REGION/{p['project_id']}",
+                region="华东",
+                status="active",
+                **p,
+                start_date=today - datetime.timedelta(days=365),
                 end_date=today + datetime.timedelta(days=365),
             )
             db.add(proj)
@@ -277,7 +286,12 @@ def seed_demo_data() -> None:
         ]
         subcontractors = []
         for s in subs_data:
-            sub = Subcontractor(tenant_id="CSCEC", org_path=f"CSCEC/CSCEC-8B/{p['project_id']}/{s['subcontractor_id']}", **s)
+            sub = Subcontractor(
+                tenant_id="CSCEC",
+                company_id="CSCEC",
+                org_path=f"CSCEC/CSCEC-8B/EAST-REGION/{s['subcontractor_id']}",
+                **s,
+            )
             db.add(sub)
             subcontractors.append(sub)
 
@@ -294,7 +308,15 @@ def seed_demo_data() -> None:
         ]
         workers = []
         for w in workers_data:
-            worker = Worker(tenant_id="CSCEC", org_path=f"CSCEC/CSCEC-8B/P001/{w['subcontractor_id']}", age=random.randint(25, 55), **w)
+            worker = Worker(
+                tenant_id="CSCEC",
+                company_id="CSCEC",
+                org_path=f"CSCEC/CSCEC-8B/EAST-REGION/{w['project_id']}/{w['subcontractor_id']}",
+                team_id=f"T-{w['subcontractor_id']}",
+                violation_count_180d=w.get("violation_count_30d", 0) * 2,
+                age=random.randint(25, 55),
+                **w,
+            )
             db.add(worker)
             workers.append(worker)
 
@@ -309,7 +331,12 @@ def seed_demo_data() -> None:
             {"hazard_id": "H007", "project_id": "P003", "subcontractor_id": "S003", "hazard_type": "高处坠落", "hazard_level": "major", "description": "地铁站台层临边防护缺失", "status": "open", "due_date": today - datetime.timedelta(days=5), "is_major": True},
         ]
         for h in hazards_data:
-            hazard = Hazard(tenant_id="CSCEC", org_path=f"CSCEC/CSCEC-8B/P001", **h)
+            hazard = Hazard(
+                tenant_id="CSCEC",
+                company_id="CSCEC",
+                org_path=f"CSCEC/CSCEC-8B/EAST-REGION/{h['project_id']}",
+                **h,
+            )
             db.add(hazard)
 
         # --- Equipment ---
@@ -320,7 +347,12 @@ def seed_demo_data() -> None:
             {"equipment_id": "E004", "project_id": "P003", "subcontractor_id": "S003", "equipment_type": "挖掘机", "equipment_name": "CAT320挖掘机", "inspection_due_date": today + datetime.timedelta(days=90), "use_status": "in_use", "is_special": False},
         ]
         for e in equipment_data:
-            eq = Equipment(tenant_id="CSCEC", org_path=f"CSCEC/CSCEC-8B/P001", **e)
+            eq = Equipment(
+                tenant_id="CSCEC",
+                company_id="CSCEC",
+                org_path=f"CSCEC/CSCEC-8B/EAST-REGION/{e['project_id']}",
+                **e,
+            )
             db.add(eq)
 
         db.commit()
@@ -343,10 +375,22 @@ def seed_demo_data() -> None:
                 cross_operation_count=proj.cross_operation_count,
             )
             db.add(ProjectRiskProfile(
-                project_id=proj.project_id, tenant_id="CSCEC", org_path=proj.org_path, calc_date=today,
-                total_risk_score=profile.total_risk_score, risk_level=profile.risk_level,
-                data_completeness=profile.data_completeness, confidence_level="medium_high",
-                risk_tags={"tags": profile.risk_tags}, strong_rule_flags=profile.evidence,
+                project_id=proj.project_id,
+                tenant_id="CSCEC",
+                company_id="CSCEC",
+                org_path=proj.org_path,
+                calc_date=today,
+                total_risk_score=profile.total_risk_score,
+                risk_level=profile.risk_level,
+                data_completeness=profile.data_completeness,
+                confidence_level="medium_high",
+                hazard_rectification_score=min(100.0, overdue * 15 + major_overdue * 10),
+                equipment_mechanical_score=min(100.0, eq_overdue * 25),
+                schedule_pressure_score=min(100.0, proj.schedule_pressure_index),
+                subcontractor_transfer_score=min(100.0, proj.cross_operation_count * 12),
+                behavior_risk_score=min(100.0, proj.night_shift_days * 4),
+                risk_tags={"tags": profile.risk_tags},
+                strong_rule_flags={"evidence": profile.evidence},
                 explanation=f"项目{proj.project_name}当前风险等级{profile.risk_level}, 风险分{profile.total_risk_score}",
                 suggestion="优先闭环重大隐患、复核特种设备检验有效期，并加强交叉作业安全巡检。",
                 model_version="v1.0",
@@ -377,12 +421,26 @@ def seed_demo_data() -> None:
             )
             if profile.total_risk_score > 0 or profile.risk_tags:
                 db.add(WorkerRiskProfile(
-                    worker_id=w.worker_id, project_id=w.project_id, subcontractor_id=w.subcontractor_id,
-                    tenant_id="CSCEC", org_path=w.org_path, calc_date=today,
-                    total_risk_score=profile.total_risk_score, risk_level=profile.risk_level,
+                    worker_id=w.worker_id,
+                    project_id=w.project_id,
+                    subcontractor_id=w.subcontractor_id,
+                    tenant_id="CSCEC",
+                    company_id="CSCEC",
+                    org_path=w.org_path,
+                    calc_date=today,
+                    total_risk_score=profile.total_risk_score,
+                    risk_level=profile.risk_level,
                     data_completeness=profile.data_completeness,
+                    confidence_level="medium",
+                    exam_risk_score=max(0.0, 60 - (w.exam_score or 60)),
+                    violation_risk_score=min(100.0, w.violation_count_30d * 20),
+                    qualification_risk_score=100.0 if w.special_cert_status in ("expired", "missing") else 0.0,
+                    health_adaptation_score=60.0 if w.health_check_status == "expired" else 0.0,
+                    operation_context_score=30.0 if w.entry_days < 7 else 0.0,
                     risk_tags={"tags": profile.risk_tags},
+                    strong_rule_flags={"evidence": profile.evidence},
                     explanation=f"工人{w.worker_name_masked}风险等级{profile.risk_level}",
+                    suggestion="复核证书有效性、培训记录与近期违规情况。",
                     model_version="v1.0",
                 ))
 
@@ -404,14 +462,28 @@ def seed_demo_data() -> None:
                 accident_history_count=sub.accident_history_count,
             )
             db.add(SubcontractorRiskProfile(
-                subcontractor_id=sub.subcontractor_id, project_id=project_id,
-                tenant_id="CSCEC", org_path=sub.org_path, calc_date=today,
-                total_risk_score=profile.total_risk_score, risk_level=profile.risk_level,
+                subcontractor_id=sub.subcontractor_id,
+                project_id=project_id,
+                tenant_id="CSCEC",
+                company_id="CSCEC",
+                org_path=sub.org_path,
+                calc_date=today,
+                total_risk_score=profile.total_risk_score,
+                risk_level=profile.risk_level,
                 data_completeness=profile.data_completeness,
+                confidence_level="medium",
+                qualification_risk_score=100.0 if sub.safety_license_status == "expired" else 0.0,
+                worker_management_score=high_risk_ratio * 100,
+                hazard_rectification_score=min(100.0, overdue_hazards * 20),
+                violation_risk_score=min(100.0, sum(w["violation_count_30d"] for w in workers_data if w["subcontractor_id"] == sub.subcontractor_id) * 10),
+                equipment_management_score=20.0 if sub.subcontractor_id == "S003" else 5.0,
+                accident_credit_score=min(100.0, sub.accident_history_count * 30),
                 high_risk_worker_ratio=high_risk_ratio,
                 overdue_rectification_ratio=overdue_hazards / max(1, len(sub_hazards)),
                 risk_tags={"tags": profile.risk_tags},
+                strong_rule_flags={"evidence": profile.evidence},
                 explanation=f"分包商{sub.subcontractor_name}风险等级{profile.risk_level}",
+                suggestion="关注许可证状态、超期隐患和高风险工人管理。",
                 model_version="v1.0",
             ))
 
@@ -424,18 +496,25 @@ def seed_demo_data() -> None:
             {"work_order_id": "WO005", "work_order_type": "worker_training", "project_id": "P002", "worker_id": "W005", "title": "高频违规工人专项培训", "description": "工人刘**30天内违规4次，推送高处作业和临边防护专项培训", "status": "pending_confirm", "priority": "high", "due_time": today + datetime.timedelta(days=5), "rule_id": "SR-WORKER-005"},
         ]
         for wo in work_orders_data:
-            order = SafetyWorkOrder(tenant_id="CSCEC", org_path=f"CSCEC/CSCEC-8B/{wo['project_id']}", **wo)
+            order = SafetyWorkOrder(
+                tenant_id="CSCEC",
+                company_id="CSCEC",
+                org_path=f"CSCEC/CSCEC-8B/EAST-REGION/{wo['project_id']}",
+                **wo,
+            )
             db.add(order)
 
-        # --- Metric Catalog ---
+        # --- Metric Catalog & enrichment modules ---
         seed_metrics(db)
         seed_accident_cases(db)
         seed_work_order_workflow_demo(db)
         seed_rbac_foundation(db, tenant_id="CSCEC", company_id="CSCEC")
         sync_agent_prompt_versions(db)
+        enrichment = seed_mock_enrichment(db, tenant_id="CSCEC", company_id="CSCEC")
 
         db.commit()
         print("=== Seed data inserted successfully ===")
+        print(f"=== Mock enrichment: {enrichment} ===")
         print(f"  Tenant: 1")
         print(f"  Projects: {len(projects)}")
         print(f"  Subcontractors: {len(subcontractors)}")

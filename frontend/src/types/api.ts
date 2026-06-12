@@ -55,6 +55,23 @@ export interface ProjectListResponse {
   items: ProjectListItem[]
 }
 
+export interface WorkerListItem {
+  worker_id: string
+  worker_name_masked: string
+  work_type: string | null
+  project_id: string | null
+  subcontractor_id: string | null
+  special_cert_status: string
+  violation_count_30d: number
+  risk_level: RiskLevel | null
+  total_risk_score: number | null
+}
+
+export interface WorkerListResponse {
+  items: WorkerListItem[]
+  total: number
+}
+
 export interface ProjectRankingItem {
   project_id: string
   project_name: string
@@ -491,4 +508,90 @@ export interface SubcontractorEvalReport {
   highlights: string[]
   recommendations: string[]
   evidence_refs: Array<{ type: string; id: string; rule_id?: string | null }>
+}
+
+export type AttributionModelLevel = 'auto' | 'L2' | 'L3'
+
+export interface AttributionRequestPayload {
+  project_id: string
+  worker_id?: string | null
+  subcontractor_id?: string | null
+  accident_type?: string | null
+  model_level?: AttributionModelLevel
+}
+
+export interface AttributionFactorContribution {
+  factor_id: string
+  category: string
+  label: string
+  prior: number
+  posterior: number
+  contribution: number
+}
+
+export interface AttributionOutcomeProbability {
+  outcome_id: string
+  label: string
+  probability: number
+}
+
+export interface AttributionPropagationPath {
+  path_id: string
+  nodes: string[]
+  edges: Array<{ from: string; to: string; weight: number }>
+  weight: number
+  target_outcome_id: string
+}
+
+export interface AttributionEvidenceRecord {
+  source_type?: string
+  source_id?: string
+  field?: string
+  value?: unknown
+  rule_id?: string
+  [key: string]: unknown
+}
+
+export interface AttributionAnalysisResult {
+  model_level: string
+  model_version: string
+  need_human_review: boolean
+  project_id: string
+  worker_id: string | null
+  subcontractor_id: string | null
+  accident_type: string | null
+  risk_level: string | null
+  factor_contributions: AttributionFactorContribution[]
+  accident_type_probabilities: AttributionOutcomeProbability[]
+  control_priorities: string[]
+  evidence: AttributionEvidenceRecord[]
+  disclaimer: string
+  case_count?: number
+  requested_model_level?: AttributionModelLevel
+  resolved_model_level?: string
+  propagation_paths?: AttributionPropagationPath[]
+  cpt_version?: string
+  structure_version?: string
+  calibration_hint?: string
+  graph_supplemental_evidence?: AttributionEvidenceRecord[]
+  neo4j_evidence_status?: string
+}
+
+export interface BayesianConfigVersionItem {
+  config_key: string
+  model_level?: string
+  version?: string
+  structure_version?: string
+  source_path?: string
+  factor_count?: number
+  outcome_count?: number
+  prior_version?: string
+  trained_at?: string
+  case_count?: number
+  training_alpha?: number
+  tenant_id?: string
+}
+
+export interface BayesianConfigVersions {
+  items: BayesianConfigVersionItem[]
 }

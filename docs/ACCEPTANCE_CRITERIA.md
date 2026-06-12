@@ -86,7 +86,7 @@
 - 问数准确率、六 Agent 编排、权限越权拦截：**通过**（85 项门禁 pytest 全绿）；
 - 会话上下文命中率：**通过**（85 用例基准，`context_hit_rate=1.0`）；Prompt 回滚：**通过**（`/agent/prompts*`）；
 - Agent/NL2SQL 已支持 `session_id` 多轮记忆接入；Docker Compose 已含 Redis 服务。
-- 演示入口：`/agent/nl2sql`、`/agent/hazard-advisor`（默认演示模式）、`/agent/approvals`。
+- 演示入口：`/agent/nl2sql`、`/agent/hazard-advisor`（默认演示模式）、`/agent/approvals`、`/analysis/attribution`。
 
 ## 8. Phase 3 里程碑验收
 
@@ -102,7 +102,7 @@
 |:---:|---|---|
 | 1 | 首 Sprint | 4-A 权重 + 4-B 案例 ≥50 |
 | 2 | 贝叶斯 L2 | 案例达 50 条后再批准 |
-| 3 | 贝叶斯 L3 | 本期不做（需 >200 条） |
+| 3 | 贝叶斯 L3 | **已通过**（案例≥200 + `PHASE5_BAYESIAN_L3_ACCEPTANCE.md`） |
 | 4 | behavior_memory | 本期不做（需合规签字） |
 | 5 | 压测目标 | 500 项目门禁 / 2000 项目 stretch |
 

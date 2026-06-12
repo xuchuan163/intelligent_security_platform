@@ -1,6 +1,6 @@
 # Bayesian L3 Calibration Backtest
 
-- Generated at: `2026-06-08T12:00:10.372096+00:00`
+- Generated at: `2026-06-08T13:22:16.904318+00:00`
 - Source: `seed_cases`
 - Train cases: **160**
 - Holdout cases: **40**

@@ -679,3 +679,4 @@ flowchart TD
 | L3-D.1–D.5 | L3 推理 + 传播路径 + Neo4j 补充 evidence + L2 回退 | ✅ | `l3_inference.py`、`graph_evidence.py` |
 | L3-E.1–E.5 | `model_level` API + bayesian-versions | ✅ | `schemas/bayesian.py`、`endpoints/config.py` |
 | L3-F.1–F.5 | 集成测试 + OpenAPI + 验收报告 | ✅ | `test_bayesian_l3.py`、`docs/api/openapi.yaml` |
+| L3-F.6 | 前端风险归因页 | ✅ | `AttributionAnalysisPage.vue`、`/analysis/attribution` |

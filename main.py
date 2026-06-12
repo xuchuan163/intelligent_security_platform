@@ -2,8 +2,11 @@
 
 Run this file directly from PyCharm to start the local development stack:
 
-- FastAPI backend: http://127.0.0.1:8000/docs
+- FastAPI backend: http://127.0.0.1:8011/docs
 - Vue frontend:   http://127.0.0.1:5173/work-orders
+
+PyCharm: choose run configuration "PyCharm Start Full Stack", or right-click
+this file and select Run 'main'.
 
 The real startup logic lives in scripts/pycharm_start.py so command-line and
 PyCharm startup share one implementation.

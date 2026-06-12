@@ -29,11 +29,15 @@ import type {
   ProjectRankingItem,
   ProjectWeeklyReport,
   SubcontractorEvalReport,
+  AttributionAnalysisResult,
+  AttributionRequestPayload,
+  BayesianConfigVersions,
   RuleTriggerLog,
   WorkOrder,
   WorkOrderCreatePayload,
   WorkOrderDetail,
   WorkOrderStatusPayload,
+  WorkerListResponse,
 } from '../types/api'
 
 const client = axios.create({
@@ -221,6 +225,13 @@ export const api = {
   projects: () => getData<ProjectListResponse>('/projects'),
   projectRanking: () => getData<ProjectRankingItem[]>('/profile/ranking/projects'),
   projectProfile: (id: string) => getData<ProfileData>(`/profile/project/${id}`),
+  workers: (params?: { project_id?: string; limit?: number }) => {
+    const search = new URLSearchParams()
+    if (params?.project_id) search.set('project_id', params.project_id)
+    if (params?.limit) search.set('limit', String(params.limit))
+    const suffix = search.toString() ? `?${search.toString()}` : ''
+    return getData<WorkerListResponse>(`/profile/workers${suffix}`)
+  },
   workerProfile: (id: string) => getData<ProfileData>(`/profile/worker/${id}`),
   subcontractorProfile: (id: string) => getData<ProfileData>(`/profile/subcontractor/${id}`),
   workOrders: (params?: { project_id?: string; status?: string }) =>
@@ -341,4 +352,7 @@ export const api = {
       `/reports/subcontractor-eval/${encodeURIComponent(subcontractorId)}${query ? `?${query}` : ''}`,
     )
   },
+  attributionAnalysis: (body: AttributionRequestPayload) =>
+    postData<AttributionAnalysisResult>('/analysis/attribution', body),
+  bayesianVersions: () => getData<BayesianConfigVersions>('/config/bayesian-versions'),
 }

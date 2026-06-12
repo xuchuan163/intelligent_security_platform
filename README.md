@@ -60,9 +60,24 @@ Phase 2 Sprint 4 NL2SQL 2.3-B 已增加内部只读执行器：
 
 ## 本地启动
 
+### PyCharm（推荐）
+
+在 PyCharm 中打开项目根目录，运行配置选择 **PyCharm Start Full Stack**，或直接右键运行根目录 `main.py`。
+
+会自动执行数据库迁移、演示数据初始化，并同时启动：
+
+- 后端 API / Swagger: http://127.0.0.1:8011/docs
+- 前端页面: http://127.0.0.1:5173/work-orders
+
+详细说明见 [`docs/PYCHARM_RUN.md`](docs/PYCHARM_RUN.md)。
+
+### 命令行（手动分步）
 ```bash
 docker compose -f deploy/docker-compose.yml up -d
 python deploy/scripts/check_stack_health.py
+
+# 或一键启动前后端（等价于 PyCharm main.py）
+python main.py
 
 cd backend
 pip install -e .

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.core.rbac import require_permissions
@@ -12,6 +12,7 @@ from app.services.profiles.service import (
     get_project_ranking,
     get_subcontractor_profile,
     get_worker_profile,
+    list_workers,
     recalculate_profiles as recalculate_profile_service,
 )
 
@@ -31,6 +32,20 @@ def project_profile(
         return success(data)
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+@router.get("/workers")
+def workers_index(
+    project_id: str | None = Query(None, description="Optional project scope filter"),
+    limit: int = Query(200, ge=1, le=500),
+    db: Session = Depends(get_db),
+    current_user: MockUser = Depends(require_permissions(Permission.PROFILE_READ)),
+):
+    try:
+        items = list_workers(db, project_id=project_id, limit=limit, current_user=current_user)
+        return success({"items": items, "total": len(items)})
     except Exception as e:
         raise HTTPException(status_code=503, detail=str(e))
 

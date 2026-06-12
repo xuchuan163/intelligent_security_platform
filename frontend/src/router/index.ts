@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import { hasStoredSession, isJwtAuthMode } from '../auth/session'
 import AgentApprovalsPage from '../pages/AgentApprovalsPage.vue'
+import AttributionAnalysisPage from '../pages/AttributionAnalysisPage.vue'
 import AssistantPage from '../pages/AssistantPage.vue'
 import DashboardPage from '../pages/DashboardPage.vue'
 import DashboardRedirectPage from '../pages/DashboardRedirectPage.vue'
@@ -31,6 +32,7 @@ const router = createRouter({
     { path: '/profiles/workers', component: WorkerProfilePage },
     { path: '/profiles/subcontractors', component: SubcontractorProfilePage },
     { path: '/metrics', component: MetricsCatalogPage },
+    { path: '/analysis/attribution', component: AttributionAnalysisPage },
     { path: '/rules/triggers', component: RulesTriggersPage },
     { path: '/work-orders', component: WorkOrdersPage },
     { path: '/agent/hazard-advisor', component: HazardRectificationPage },

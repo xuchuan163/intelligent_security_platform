@@ -23,14 +23,14 @@
 | 2 | **工人画像** | 考核+违规+证书简化评分，查询 | ✅ 已完成，API 契约已固化 |
 | 3 | **分包商画像** | 超期隐患+高风险工人占比+信用分，查询 | ✅ 已完成，API 契约已固化 |
 | 4 | **强规则预警** | YAML 10 条 + 触发日志 + 重算自动工单 | ✅ 已完成 |
-| 5 | **隐患闭环** | 隐患台账 + 整改建议（模板/Agent） | ⚠️ 缺 Agent 整改建议 |
+| 5 | **隐患闭环** | 隐患台账 + 整改建议（Agent）+ 上传建单 | ✅ 已完成（`HazardRectificationPage` + 隐患上传） |
 | 6 | **工单流转** | 创建、状态机、列表、前端闭环操作、超期升级 API | ✅ 已完成 |
-| 7 | **风险驾驶舱** | KPI + 项目 Top10 + 工单分布 | ✅ 基本完成 |
-| 8 | **事故案例库** | 结构化导入（MySQL 表 + 种子） | ✅ 已完成，5 条种子 + `/case/list` |
-| 9 | **数据治理** | 统一 ID、指标字典初版（≥30 指标） | ✅ metric_catalog 已有 32 条启用指标 |
-| 10 | **会话记忆** | Redis 会话上下文（多轮问数） | ❌ 未开始 |
-| 11 | **Qwen 助手** | 安全问答 + 项目风险解释 | ✅ 基本完成 |
-| 12 | **认证预留** | mock 用户 + 部分 data_scope | ✅ mock 用户 + data_scope 读路径过滤 + 10 条权限测试 |
+| 7 | **风险驾驶舱** | KPI + 项目 Top10 + 工单分布 | ✅ 已完成 |
+| 8 | **事故案例库** | 结构化导入（MySQL 表 + 种子） | ✅ 已完成，200+ 条（L3）+ `/case/list` |
+| 9 | **数据治理** | 统一 ID、指标字典初版（≥30 指标） | ✅ 100+ 指标已 seed |
+| 10 | **会话记忆** | Redis 会话上下文（多轮问数） | ✅ Phase 2 已完成 |
+| 11 | **Qwen 助手** | 安全问答 + 项目风险解释 | ✅ 已完成 |
+| 12 | **认证预留** | JWT + RBAC + mock 兼容 | ✅ JWT/RBAC + data_scope + 权限测试 |
 
 **图例：** ✅ 完成 | ⚠️ 部分完成 | ❌ 未开始
 
@@ -142,6 +142,10 @@
 | AI 助手 | ✅ | 对话 |
 | 规则触发日志 | ✅ | `/rules/triggers` |
 | 指标目录浏览 | ✅ | `/metrics` |
+| 贝叶斯风险归因 | ✅ | `/analysis/attribution`（Phase 5） |
+| 智能问数 / Agent 审批 / 隐患顾问 | ✅ | `/agent/*` |
+| 项目周报 / 分包评价 | ✅ | `/reports/*` |
+| 登录页（JWT） | ✅ | `/login` |
 | 移动端 | ❌ | 二期 |
 
 ---
@@ -214,14 +218,20 @@ MVP **不对接**真实上游系统，所有数据来自：
 | POST | /api/v1/assistant/project-risk-explanation | ✅ |
 | GET | /api/v1/metrics/catalog | ✅ |
 | GET | /api/v1/metrics/{metric_code} | ✅ |
+| POST | /api/v1/analysis/attribution | ✅ Phase 4/5 |
+| GET | /api/v1/config/bayesian-versions | ✅ Phase 5 |
 
-### 6.2 MVP 不应新增
+> **注：** Phase 2–5 已扩展 Agent、记忆、案例、报告、Webhook 等 API；以 `docs/api/openapi.yaml` 与 `IMPLEMENTATION_ROADMAP.md` 为准。
 
-- `/api/v1/agent/ask`、`/agent/nl2sql`
-- `/api/v1/memory/*`
-- `/api/v1/case/*`
-- `/api/v1/report/*`
-- `/webhook/*`
+### 6.2 MVP 原占位（现已按 Phase 2–5 实现）
+
+以下接口在 MVP 初版文档中标注为二期，**当前代码已实现**：
+
+- `/api/v1/agent/ask`、`/agent/nl2sql`、`/agent/approvals`
+- `/api/v1/memory/session`
+- `/api/v1/case/list`
+- `/api/v1/reports/*`
+- `/api/v1/webhooks/test`
 
 如需占位，返回 `501 Not Implemented` 并注明 Phase 2。
 

@@ -3,9 +3,11 @@ from __future__ import annotations
 import argparse
 import os
 import shutil
+import signal
 import socket
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -20,6 +22,7 @@ DEFAULT_MYSQL_PASSWORD = "275874"
 
 def main() -> int:
     args = build_arg_parser().parse_args()
+    register_stop_handlers()
 
     env = os.environ.copy()
     env.update(load_dotenv(ROOT / ".env"))
@@ -28,11 +31,12 @@ def main() -> int:
     env["DATABASE_URL"] = env.get("DATABASE_URL") or detect_database_url(env)
     env["VITE_API_TARGET"] = f"http://127.0.0.1:{args.backend_port}"
 
-    python = VENV_PYTHON if VENV_PYTHON.exists() else Path(sys.executable)
-    ensure_file(python, "Python interpreter")
+    python = resolve_python_interpreter()
     ensure_file(FRONTEND / "package.json", "frontend package.json")
 
-    print_header(env, args.backend_port, args.frontend_port)
+    print_header(env, args.backend_port, args.frontend_port, python)
+    ensure_python_version(python)
+    ensure_backend_dependencies(python)
     ensure_ports_available([args.backend_port, args.frontend_port], kill_ports=args.kill_ports)
 
     if not args.skip_migrate:
@@ -44,7 +48,7 @@ def main() -> int:
     processes: list[subprocess.Popen[str]] = []
     try:
         processes.append(
-            subprocess.Popen(
+            spawn_labeled_process(
                 [
                     str(python),
                     "-m",
@@ -58,20 +62,20 @@ def main() -> int:
                 ],
                 cwd=BACKEND,
                 env=env,
-                text=True,
+                label="backend",
             )
         )
         processes.append(
-            subprocess.Popen(
+            spawn_labeled_process(
                 frontend_command,
                 cwd=FRONTEND,
                 env=env,
-                text=True,
+                label="frontend",
             )
         )
 
-        wait_for_port(args.backend_port, "backend")
-        wait_for_port(args.frontend_port, "frontend")
+        wait_for_port(args.backend_port, "backend", processes[0])
+        wait_for_port(args.frontend_port, "frontend", processes[1])
         print("")
         print(f"Backend docs: http://127.0.0.1:{args.backend_port}/docs")
         print(f"Frontend:     http://127.0.0.1:{args.frontend_port}/work-orders")
@@ -85,7 +89,16 @@ def main() -> int:
         print("Stopping services...")
         return 0
     finally:
-        stop_processes(processes)
+        stop_processes(processes, [args.backend_port, args.frontend_port])
+
+
+def register_stop_handlers() -> None:
+    def handle_stop(_signum: int, _frame: object | None) -> None:
+        raise KeyboardInterrupt
+
+    signal.signal(signal.SIGINT, handle_stop)
+    if hasattr(signal, "SIGTERM"):
+        signal.signal(signal.SIGTERM, handle_stop)
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
@@ -94,7 +107,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--frontend-port", type=int, default=5173)
     parser.add_argument("--skip-migrate", action="store_true")
     parser.add_argument("--skip-seed", action="store_true")
-    parser.add_argument("--kill-ports", action="store_true", help="Stop existing listeners on backend/frontend ports before startup.")
+    parser.add_argument("--kill-ports", action=argparse.BooleanOptionalAction, default=True, help="Stop existing processes on backend/frontend ports before startup.")
     return parser
 
 
@@ -145,6 +158,50 @@ def mysql_is_reachable(port: int, password: str, db_name: str) -> bool:
         return False
 
 
+def resolve_python_interpreter() -> Path:
+    explicit = os.environ.get("PROJECT_PYTHON")
+    if explicit:
+        path = Path(explicit).resolve()
+        ensure_file(path, "PROJECT_PYTHON interpreter")
+        return path
+
+    current = Path(sys.executable).resolve()
+    ensure_file(current, "Python interpreter")
+    return current
+
+
+def ensure_python_version(python: Path) -> None:
+    result = subprocess.run(
+        [str(python), "-c", "import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode == 0:
+        return
+
+    raise RuntimeError(
+        f"{python} is Python 3.10 or older. Backend requires Python 3.11+. "
+        f"In PyCharm set Interpreter to {ROOT / '.venv' / 'Scripts' / 'python.exe'} "
+        "or upgrade your conda env to Python 3.11+."
+    )
+
+
+def ensure_backend_dependencies(python: Path) -> None:
+    result = subprocess.run(
+        [str(python), "-c", "import jwt"],
+        cwd=BACKEND,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode == 0:
+        return
+
+    raise RuntimeError(
+        f"Backend dependencies are missing in {python}. "
+        f'Install them once with: "{python}" -m pip install -e "{BACKEND}[dev]"'
+    )
+
+
 def ensure_file(path: Path, label: str) -> None:
     if not path.exists():
         raise FileNotFoundError(f"{label} not found: {path}")
@@ -154,10 +211,7 @@ def alembic_upgrade_command(python: Path) -> list[str]:
     alembic_exe = python.parent / ("alembic.exe" if os.name == "nt" else "alembic")
     if alembic_exe.exists():
         return [str(alembic_exe), "upgrade", "head"]
-    raise FileNotFoundError(
-        f"Alembic executable not found: {alembic_exe}. "
-        'Install backend dependencies with: .\\.venv\\Scripts\\python.exe -m pip install -e "backend[dev]"'
-    )
+    return [str(python), "-m", "alembic", "upgrade", "head"]
 
 
 def npm_command(env: dict[str, str]) -> list[str]:
@@ -257,9 +311,56 @@ def run_checked(command: list[str], cwd: Path, env: dict[str, str]) -> None:
     subprocess.run(command, cwd=cwd, env=env, check=True)
 
 
-def wait_for_port(port: int, label: str, timeout_seconds: int = 30) -> None:
+def spawn_labeled_process(
+    command: list[str],
+    cwd: Path,
+    env: dict[str, str],
+    label: str,
+) -> subprocess.Popen[str]:
+    process = subprocess.Popen(
+        command,
+        cwd=cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+        encoding="utf-8",
+        errors="replace",
+        start_new_session=os.name != "nt",
+    )
+    thread = threading.Thread(target=stream_process_output, args=(process, label), daemon=True)
+    thread.start()
+    return process
+
+
+def stream_process_output(process: subprocess.Popen[str], label: str) -> None:
+    assert process.stdout is not None
+    prefix = f"[{label}] "
+    encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+    for line in process.stdout:
+        safe_line = line.encode(encoding, errors="replace").decode(encoding, errors="replace")
+        try:
+            print(f"{prefix}{safe_line}", end="", flush=True)
+        except UnicodeEncodeError:
+            fallback = safe_line.encode("ascii", errors="replace").decode("ascii", errors="replace")
+            print(f"{prefix}{fallback}", end="", flush=True)
+
+
+def wait_for_port(
+    port: int,
+    label: str,
+    process: subprocess.Popen[str] | None = None,
+    timeout_seconds: int = 30,
+) -> None:
     deadline = time.time() + timeout_seconds
     while time.time() < deadline:
+        exit_code = process.poll() if process is not None else None
+        if exit_code is not None:
+            raise RuntimeError(
+                f"{label} exited with code {exit_code} before listening on port {port}. "
+                "Check the [backend] or [frontend] logs above."
+            )
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.settimeout(1)
             if sock.connect_ex(("127.0.0.1", port)) == 0:
@@ -283,14 +384,86 @@ def ensure_ports_available(ports: list[int], kill_ports: bool = False) -> None:
 
     for port in busy_ports:
         kill_port(port)
-    for port in busy_ports:
-        deadline = time.time() + 10
-        while time.time() < deadline:
-            if not port_is_listening(port):
-                break
-            time.sleep(0.5)
-        else:
-            raise RuntimeError(f"Port {port} is still in use after --kill-ports cleanup.")
+
+    deadline = time.time() + 15
+    while time.time() < deadline:
+        busy_ports = [port for port in ports if port_is_listening(port)]
+        if not busy_ports:
+            return
+        for port in busy_ports:
+            kill_port(port)
+        time.sleep(0.5)
+
+    busy_ports = [port for port in ports if port_is_listening(port)]
+    details = "; ".join(describe_port_blockers(port) for port in busy_ports)
+    raise RuntimeError(
+        f"Port {', '.join(str(port) for port in busy_ports)} is still in use after --kill-ports cleanup. "
+        f"{details}"
+    )
+
+
+def describe_port_blockers(port: int) -> str:
+    pids = pids_holding_port(port)
+    if not pids:
+        return f"port {port}: unknown blocker"
+    return f"port {port}: pid(s) {', '.join(str(pid) for pid in pids)}"
+
+
+def pids_holding_port(port: int) -> list[int]:
+    if os.name != "nt":
+        return []
+
+    pids = _pids_from_net_tcp_connection(port)
+    if pids:
+        return pids
+    return _pids_from_netstat(port)
+
+
+def _pids_from_net_tcp_connection(port: int) -> list[int]:
+    command = (
+        f"Get-NetTCPConnection -LocalPort {port} -ErrorAction SilentlyContinue "
+        "| Where-Object {{ $_.OwningProcess -gt 0 }} "
+        "| Select-Object -ExpandProperty OwningProcess -Unique"
+    )
+    result = subprocess.run(
+        ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", command],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    pids: list[int] = []
+    for line in (result.stdout or "").splitlines():
+        token = line.strip()
+        if token.isdigit():
+            pids.append(int(token))
+    return sorted(set(pids))
+
+
+def _pids_from_netstat(port: int) -> list[int]:
+    netstat = Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32" / "netstat.exe"
+    if not netstat.exists():
+        return []
+
+    result = subprocess.run(
+        [str(netstat), "-ano"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    pids: list[int] = []
+    needle = f":{port}"
+    for line in (result.stdout or "").splitlines():
+        if needle not in line:
+            continue
+        parts = line.split()
+        if not parts:
+            continue
+        pid_token = parts[-1]
+        if pid_token.isdigit() and int(pid_token) > 0:
+            pids.append(int(pid_token))
+    return sorted(set(pids))
 
 
 def port_is_listening(port: int) -> bool:
@@ -310,21 +483,21 @@ def port_is_listening(port: int) -> bool:
 def kill_port(port: int) -> None:
     if os.name != "nt":
         raise RuntimeError("--kill-ports is currently implemented for Windows only.")
-    command = (
-        f"Get-NetTCPConnection -LocalPort {port} -State Listen -ErrorAction SilentlyContinue "
-        "| Select-Object -ExpandProperty OwningProcess -Unique "
-        "| ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }"
-    )
-    subprocess.run(
-        ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", command],
-        check=False,
-    )
+
+    pids = pids_holding_port(port)
+    if not pids:
+        return
+
+    print(f"Stopping processes on port {port}: {', '.join(str(pid) for pid in pids)}")
+    for pid in pids:
+        kill_process_tree(pid)
 
 
-def print_header(env: dict[str, str], backend_port: int, frontend_port: int) -> None:
+def print_header(env: dict[str, str], backend_port: int, frontend_port: int, python: Path) -> None:
     database_url = redact_database_url(env["DATABASE_URL"])
     print("CSCEC smart safety platform dev startup")
     print(f"Root:         {ROOT}")
+    print(f"Python:       {python}")
     print(f"Database:     {database_url}")
     print(f"Backend port: {backend_port}")
     print(f"Frontend port:{frontend_port}")
@@ -346,16 +519,55 @@ def first_exit_code(processes: list[subprocess.Popen[str]]) -> int:
     return 0
 
 
-def stop_processes(processes: list[subprocess.Popen[str]]) -> None:
+def stop_processes(processes: list[subprocess.Popen[str]], ports: list[int] | None = None) -> None:
     for process in processes:
         if process.poll() is None:
-            process.terminate()
+            kill_process_tree(process.pid)
     for process in processes:
         if process.poll() is None:
             try:
                 process.wait(timeout=8)
             except subprocess.TimeoutExpired:
-                process.kill()
+                kill_process_tree(process.pid)
+
+    if os.name == "nt" and ports:
+        for port in ports:
+            kill_port(port)
+
+
+def kill_process_tree(pid: int) -> None:
+    if os.name == "nt":
+        taskkill = Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32" / "taskkill.exe"
+        if taskkill.exists():
+            subprocess.run(
+                [str(taskkill), "/F", "/T", "/PID", str(pid)],
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        else:
+            subprocess.run(
+                [
+                    "powershell",
+                    "-NoProfile",
+                    "-ExecutionPolicy",
+                    "Bypass",
+                    "-Command",
+                    f"Stop-Process -Id {pid} -Force -ErrorAction SilentlyContinue",
+                ],
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        return
+
+    try:
+        os.killpg(os.getpgid(pid), 9)
+    except (ProcessLookupError, PermissionError, OSError):
+        try:
+            os.kill(pid, 9)
+        except (ProcessLookupError, PermissionError, OSError):
+            return
 
 
 if __name__ == "__main__":

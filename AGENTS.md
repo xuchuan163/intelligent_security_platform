@@ -2,7 +2,7 @@
 
 > 本文件是 vibe coding / Cursor Agent 的**首要上下文**。开始任何编码任务前必须先阅读本文件。
 
-> **项目状态（2026-06-08）：一期已收口，Phase 5 L3 重新立项。** Phase 0–4 验收完成；**贝叶斯 L3** 在 `feature/phase5-bayesian-l3` 按 `docs/plans/10-bayesian-l3-implementation.md` 推进（Sprint 1：L3-0/A/B）。详见 `docs/PROJECT_CLOSURE.md`、`docs/PHASE5_BAYESIAN_L3_KICKOFF.md`。behavior_memory、视频/BIM、灾备实操等仍不在范围。
+> **项目状态（2026-06-08）：Phase 0–5 核心里程碑已验收。** 一期已收口；**贝叶斯 L3** 已交付（`docs/PHASE5_BAYESIAN_L3_ACCEPTANCE.md`）；前端 **风险归因页** `/analysis/attribution` 已对接 `POST /analysis/attribution`。behavior_memory、视频/BIM、灾备实操等仍不在范围。详见 `docs/PROJECT_CLOSURE.md`。
 
 ---
 
@@ -22,43 +22,39 @@
 
 ---
 
-## 2. 当前代码基线（截至 2026-06-03）
+## 2. 当前代码基线（截至 2026-06-08）
 
 ### 2.1 已实现
 
 | 模块 | 状态 | 关键路径 |
 |---|---|---|
 | 后端框架 | ✅ | `backend/app/main.py` |
-| MySQL 15 张核心表 | ✅ | `backend/app/infrastructure/database/models.py` |
-| Alembic 迁移 | ✅ | `backend/alembic/versions/20260602_0001_initial_schema.py` |
-| 三类画像（简化公式 + 三类重算） | ✅ | `backend/app/services/profiles/` |
+| MySQL 29 张 ORM 表 | ✅ | `backend/app/infrastructure/database/models.py` |
+| Alembic 迁移链 | ✅ | `backend/alembic/versions/` |
+| 三类画像 + 类型权重 + 动态因子 + 重算 | ✅ | `backend/app/services/profiles/` |
 | 强规则 YAML + RuleEngine（10 条） | ✅ | `config/rules/`、`backend/app/services/rules/engine.py` |
 | 规则触发日志 + 去重自动建单 | ✅ | `backend/app/services/rules/work_order_trigger.py` |
-| 工单状态机 + 前端闭环 + 超期升级 API | ✅ | `backend/app/domain/work_orders.py`、`backend/app/services/work_orders/service.py`、`frontend/src/pages/WorkOrdersPage.vue` |
-| 隐患上传 + 岗位流转 + 附件闭环 | ✅ | `backend/app/api/v1/endpoints/hazards.py`、`backend/app/services/work_orders/workflow.py`、`backend/scripts/verify_hazard_workflow_demo.py` |
-| 统一错误响应 | ✅ | `backend/app/core/errors.py` |
-| 指标目录 API（32 条 seed） | ✅ | `backend/app/api/v1/endpoints/metrics.py`、`config/metrics/catalog.yaml` |
-| Mock 认证与部分 data_scope | ✅ | `backend/app/core/security.py` |
-| Qwen 安全助手 | ✅ | `backend/app/services/agents/safety_assistant.py` |
-| Vue3 前端 6 页 | ✅ | `frontend/src/pages/` |
-| Docker MySQL | ✅ | `deploy/docker-compose.yml` |
+| 工单状态机 + 隐患上传流转 + 超期升级 | ✅ | `work_orders/`、`hazards.py`、`WorkOrdersPage.vue` |
+| 指标语义层（100+ 指标） | ✅ | `metrics.py`、`config/metrics/catalog.yaml` |
+| JWT + RBAC + OAuth 占位 | ✅ | `auth.py`、`core/rbac.py`、`LoginPage.vue` |
+| 会话记忆 + NL2SQL 安全门 + 多 Agent DAG | ✅ | `memory.py`、`agent.py`、`Nl2SqlChatPage.vue` |
+| 四库（Redis/Milvus/Neo4j 可选） | ✅ | `rag.py`、`graph.py`、`deploy/docker-compose.yml` |
+| 贝叶斯 L2/L3 归因 + 版本 API | ✅ | `analysis.py`、`config.py`、`domain/bayesian/` |
+| 事故案例库（200+ L3 种子） | ✅ | `cases.py`、`seed_cases_l3_bulk.py` |
+| Qwen 安全助手 + 隐患整改 Agent | ✅ | `assistant.py`、`HazardRectificationPage.vue` |
+| Vue3 前端 15 页（含风险归因） | ✅ | `frontend/src/pages/`、`AttributionAnalysisPage.vue` |
 | 演示种子数据 | ✅ | `backend/scripts/seed_demo_data.py` |
 
-### 2.2 明确未完成 / 待补齐（按 Phase 1 继续）
+### 2.2 明确未实现（不要擅自扩展）
 
-- dashboard / metrics / rules 列表的 data_scope 覆盖与 10 条权限测试
-- 事故案例库 MVP：表 + 5 条种子 + `GET /case/list`
-- 画像 API `calculated_at` / `confidence_level` 契约固化
+- behavior_memory（培训向量，需合规签字）
+- 视频 AI 实时告警、BIM 三维图层
+- 灾备双活实操、生产 K8s / 全量 OAuth / WAF
+- L4 时序/GNN、L3 在线自动重训 cron
+- 分包商清退 / 自动处罚（必须人工复核）
+- 生产级 OA 回写、自动处罚工单
 
-### 2.3 明确未实现（不要擅自扩展）
-
-- 生产级认证 / JWT / RBAC
-- Redis 会话记忆、Agent Checkpoint
-- Neo4j 图谱、Milvus 向量库、时序库
-- 完整 NL2SQL、6 Agent 编排 DAG
-- 生产级 Webhook、OA 回写
-
-详见 `docs/MVP_SCOPE.md`。
+详见 `docs/MVP_SCOPE.md`、`docs/PROJECT_CLOSURE.md`。
 
 ---
 

@@ -4,9 +4,9 @@
 |---|---|
 | 原收口日期 | 2026-06-08（Phase 0–4） |
 | **L3 解冻日期** | **2026-06-08** |
-| 当前状态 | **Phase 0–4 已验收；Phase 5 贝叶斯 L3 重新立项进行中** |
-| 分支 | `feature/phase5-bayesian-l3` |
-| 验收依据 | `docs/PHASE2_ACCEPTANCE.md`、`docs/PHASE3_ACCEPTANCE.md`、`docs/PHASE4_ACCEPTANCE.md`、`docs/PHASE5_BAYESIAN_L3_KICKOFF.md` |
+| 当前状态 | **Phase 0–5 核心里程碑已验收** |
+| 分支 | `master`（`feature/phase5-bayesian-l3` 已合并） |
+| 验收依据 | `docs/PHASE2_ACCEPTANCE.md` … `docs/PHASE5_BAYESIAN_L3_ACCEPTANCE.md` |
 
 ---
 
@@ -55,7 +55,7 @@
     ↓
 智能能力：会话记忆、NL2SQL 安全门、多 Agent 受控编排
     ↓
-贝叶斯 L2 归因（已交付）→ **L3 DAG+CPT（Phase 5 进行中）**
+贝叶斯 L2 归因（已交付）→ L3 DAG+CPT（Phase 5 已交付）→ 前端风险归因页
 ```
 
 ---
@@ -72,7 +72,7 @@
 | 四库 | Redis 缓存、Milvus RAG、Neo4j 邻居（可选） | `/api/v1/rag/*`、`/api/v1/graph/*` |
 | 认证 | JWT、RBAC、OAuth 占位 | `/api/v1/auth/*` |
 | 算法 | 案例回测、贝叶斯 L2/L3 归因（含传播路径） | `/api/v1/analysis/attribution`、`/api/v1/config/bayesian-versions` |
-| 前端 | 驾驶舱、画像、工单、Agent、报告等 | `frontend/` `npm run build` |
+| 前端 | 驾驶舱、画像、工单、Agent、报告、**风险归因** `/analysis/attribution` | `frontend/` `npm run build` |
 
 ---
 
@@ -96,14 +96,16 @@ python -m uvicorn app.main:app --reload --port 8000
 cd frontend && npm run dev
 ```
 
-**L2 归因示例：**
+**归因演示（前端）：** 登录公司级账号 → 侧栏「风险归因」→ 选 P001 + `高处坠落` → 运行归因（auto 路由 L3）。
+
+**L3 归因 curl：**
 
 ```bash
 curl -X POST http://127.0.0.1:8000/api/v1/analysis/attribution \
   -H "Content-Type: application/json" \
   -H "X-Mock-User-Id: demo-admin" -H "X-Tenant-Id: CSCEC" \
   -H "X-Role: platform_admin" -H "X-Data-Scope: tenant" \
-  -d '{"project_id":"P001","accident_type":"高处坠落"}'
+  -d '{"project_id":"P001","accident_type":"高处坠落","model_level":"auto"}'
 ```
 
 ---
@@ -124,7 +126,7 @@ curl -X POST http://127.0.0.1:8000/api/v1/analysis/attribution \
 ## 8. 维护说明
 
 - Phase 0–4 进入**维护态**（缺陷修复、依赖安全更新）。
-- **Phase 5 L3** 在 `feature/phase5-bayesian-l3` 分支按 Sprint 推进。
+- **Phase 5 L3** 已进入维护态；前端归因页与文档随缺陷修复同步更新。
 - 所有 Agent / 归因 / 回测输出均须人工复核（`AGENTS.md` §5.4）。
 
 **项目状态：一期已闭环；Phase 5 贝叶斯 L3 核心里程碑已完成（见 `docs/PHASE5_BAYESIAN_L3_ACCEPTANCE.md`）。**

@@ -200,6 +200,54 @@ def _load_subcontractor_profile(
     }
 
 
+def list_workers(
+    db: Session,
+    *,
+    project_id: str | None = None,
+    limit: int = 200,
+    current_user: MockUser | None = None,
+) -> list[dict]:
+    today = datetime.date.today()
+    query = db.query(Worker).filter(Worker.status == "active")
+    if current_user:
+        query = apply_data_scope(query, Worker, current_user)
+    if project_id:
+        query = query.filter(Worker.project_id == project_id)
+
+    workers = query.order_by(Worker.project_id, Worker.worker_id).limit(limit).all()
+    if not workers:
+        return []
+
+    worker_ids = [worker.worker_id for worker in workers]
+    profile_rows = (
+        db.query(WorkerRiskProfile)
+        .filter(
+            WorkerRiskProfile.worker_id.in_(worker_ids),
+            WorkerRiskProfile.calc_date == today,
+        )
+        .all()
+    )
+    profile_by_worker = {row.worker_id: row for row in profile_rows}
+
+    items: list[dict] = []
+    for worker in workers:
+        profile = profile_by_worker.get(worker.worker_id)
+        items.append(
+            {
+                "worker_id": worker.worker_id,
+                "worker_name_masked": worker.worker_name_masked,
+                "work_type": worker.work_type,
+                "project_id": worker.project_id,
+                "subcontractor_id": worker.subcontractor_id,
+                "special_cert_status": worker.special_cert_status,
+                "violation_count_30d": worker.violation_count_30d,
+                "risk_level": profile.risk_level if profile else None,
+                "total_risk_score": profile.total_risk_score if profile else None,
+            }
+        )
+    return items
+
+
 def get_project_ranking(db: Session, current_user: MockUser | None = None) -> list[dict]:
     today = datetime.date.today()
     query = db.query(
